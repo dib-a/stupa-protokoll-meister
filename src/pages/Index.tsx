@@ -24,6 +24,7 @@ export type AgendaItem = {
   } | null;
   notes: string;
   completed: boolean;
+  documentName?: string; // PDF filename if this TOP is created from a document
 };
 
 export type MeetingData = {
@@ -51,6 +52,26 @@ const Index = () => {
 
   const updateMeetingData = (updates: Partial<MeetingData>) => {
     setMeetingData(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleDocumentUpdate = (documents: File[]) => {
+    const previousDocs = meetingData.documents;
+    const newDocs = documents.filter(doc => !previousDocs.some(prevDoc => prevDoc.name === doc.name));
+    
+    // Create agenda items for new PDFs
+    const newAgendaItems = newDocs.map(doc => ({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: doc.name.replace('.pdf', ''),
+      votingResult: null,
+      notes: '',
+      completed: false,
+      documentName: doc.name
+    }));
+
+    updateMeetingData({ 
+      documents,
+      agendaItems: [...meetingData.agendaItems, ...newAgendaItems]
+    });
   };
 
   const getQuorumStatus = () => {
@@ -105,7 +126,7 @@ const Index = () => {
               <div className="space-y-8">
                 <DocumentManager 
                   documents={meetingData.documents}
-                  onUpdate={(documents) => updateMeetingData({ documents })}
+                  onUpdate={handleDocumentUpdate}
                 />
                 <AgendaManager
                   agendaItems={meetingData.agendaItems}

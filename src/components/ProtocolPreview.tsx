@@ -89,6 +89,10 @@ Eröffnung: ${meetingData.meetingTimes.opening} Uhr
     meetingData.agendaItems.forEach((item, index) => {
       protocol += `TOP ${index + 1}: ${item.title}\n`;
       
+      if (item.documentName) {
+        protocol += `Dokument: ${item.documentName}\n`;
+      }
+      
       if (item.votingResult) {
         const { ja, nein, enthaltungen } = item.votingResult;
         const total = ja + nein + enthaltungen;

@@ -118,15 +118,26 @@ export const AgendaManager = ({ agendaItems, onUpdate }: AgendaManagerProps) => 
               <Card key={item.id} className={item.completed ? "bg-muted/30" : ""}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <Badge variant="outline">TOP {index + 1}</Badge>
-                        {item.completed && (
-                          <CheckCircle className="h-5 w-5 text-success" />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3">
+                          <Badge variant="outline">TOP {index + 1}</Badge>
+                          {item.documentName && (
+                            <Badge variant="secondary" className="text-xs">
+                              <FileText className="h-3 w-3 mr-1" />
+                              PDF
+                            </Badge>
+                          )}
+                          {item.completed && (
+                            <CheckCircle className="h-5 w-5 text-success" />
+                          )}
+                        </div>
+                        <h3 className="font-semibold text-lg mt-2">{item.title}</h3>
+                        {item.documentName && (
+                          <p className="text-sm text-muted-foreground">
+                            Dokument: {item.documentName}
+                          </p>
                         )}
                       </div>
-                      <h3 className="font-semibold text-lg mt-2">{item.title}</h3>
-                    </div>
                     <div className="flex space-x-2">
                       <Button
                         size="sm"
