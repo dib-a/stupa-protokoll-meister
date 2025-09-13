@@ -16,43 +16,43 @@
     --popover: 0 0% 100%;
     --popover-foreground: 210 20% 15%;
 
-    /* Primary - Deep academic blue */
-    --primary: 210 85% 25%;
+    /* Primary - StuPa main blue */
+    --primary: 198 100% 46%;
     --primary-foreground: 0 0% 98%;
-    --primary-hover: 210 85% 20%;
+    --primary-hover: 198 100% 40%;
 
-    /* Secondary - Light professional gray */
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 210 20% 15%;
+    /* Secondary - StuPa green */
+    --secondary: 155 35% 59%;
+    --secondary-foreground: 0 0% 98%;
 
     /* Muted - Subtle backgrounds */
     --muted: 210 20% 97%;
     --muted-foreground: 210 15% 45%;
 
-    /* Accent - University gold/amber */
-    --accent: 45 85% 55%;
-    --accent-foreground: 210 20% 15%;
+    /* Accent - StuPa orange */
+    --accent: 32 100% 47%;
+    --accent-foreground: 0 0% 98%;
 
     /* Status colors */
-    --success: 140 60% 45%;
+    --success: 155 35% 59%;
     --success-foreground: 0 0% 98%;
-    --warning: 35 85% 55%;
-    --warning-foreground: 210 20% 15%;
-    --destructive: 0 75% 50%;
+    --warning: 32 100% 47%;
+    --warning-foreground: 0 0% 98%;
+    --destructive: 352 100% 44%;
     --destructive-foreground: 0 0% 98%;
 
     /* Borders and inputs */
     --border: 210 20% 88%;
     --input: 210 20% 94%;
-    --ring: 210 85% 25%;
+    --ring: 198 100% 46%;
 
     --radius: 0.5rem;
 
     /* Meeting-specific colors */
-    --quorum-met: 140 60% 45%;
-    --quorum-missing: 0 75% 50%;
-    --agenda-active: 210 85% 25%;
-    --agenda-completed: 140 60% 45%;
+    --quorum-met: 155 35% 59%;
+    --quorum-missing: 352 100% 44%;
+    --agenda-active: 198 100% 46%;
+    --agenda-completed: 155 35% 59%;
 
     /* Gradients */
     --gradient-header: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));

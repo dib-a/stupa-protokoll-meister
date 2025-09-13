@@ -113,6 +113,17 @@ Ergebnis: ${result}\n`;
       protocol += `NÄCHSTE SITZUNG: ${meetingData.nextMeetingDate}\n\n`;
     }
 
+    // Add documents section at the end
+    const documentsWithTops = meetingData.agendaItems.filter(item => item.documentName);
+    if (documentsWithTops.length > 0) {
+      protocol += `ANLAGEN:\n`;
+      documentsWithTops.forEach((item, index) => {
+        const topNumber = meetingData.agendaItems.findIndex(a => a.id === item.id) + 1;
+        protocol += `TOP ${topNumber}: ${item.documentName}\n`;
+      });
+      protocol += '\n';
+    }
+
     protocol += `Protokoll erstellt am: ${new Date().toLocaleString('de-DE')}`;
 
     return protocol;
@@ -234,9 +245,55 @@ Ergebnis: ${result}\n`;
         </CardHeader>
         <CardContent>
           <div className="bg-muted/30 p-4 rounded-lg max-h-96 overflow-y-auto">
-            <pre className="text-sm whitespace-pre-wrap font-mono">
-              {generateProtocolText()}
-            </pre>
+            <div className="text-sm whitespace-pre-wrap font-mono">
+              {generateProtocolText().split('\n').map((line, index) => {
+                // Check if this line contains a document name that should be clickable
+                const docMatch = line.match(/^Dokument: (.+)$/);
+                if (docMatch) {
+                  const docName = docMatch[1];
+                  const document = meetingData.documents.find(doc => doc.name === docName);
+                  if (document) {
+                    const url = URL.createObjectURL(document);
+                    return (
+                      <div key={index}>
+                        Dokument: <a 
+                          href={url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline cursor-pointer"
+                        >
+                          {docName}
+                        </a>
+                      </div>
+                    );
+                  }
+                }
+                
+                // Check for document links in the attachments section
+                const topDocMatch = line.match(/^TOP (\d+): (.+\.pdf)$/);
+                if (topDocMatch) {
+                  const docName = topDocMatch[2];
+                  const document = meetingData.documents.find(doc => doc.name === docName);
+                  if (document) {
+                    const url = URL.createObjectURL(document);
+                    return (
+                      <div key={index}>
+                        TOP {topDocMatch[1]}: <a 
+                          href={url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline cursor-pointer"
+                        >
+                          {docName}
+                        </a>
+                      </div>
+                    );
+                  }
+                }
+                
+                return <div key={index}>{line}</div>;
+              })}
+            </div>
           </div>
         </CardContent>
       </Card>

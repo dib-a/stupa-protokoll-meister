@@ -6,6 +6,7 @@ import { AgendaManager } from "@/components/AgendaManager";
 import { ProtocolPreview } from "@/components/ProtocolPreview";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MeetingTimeTracker } from "@/components/MeetingTimeTracker";
+import stupaLogo from "@/assets/stupa-logo.png";
 
 export type Participant = {
   id: string;
@@ -86,10 +87,15 @@ const Index = () => {
       {/* Header */}
       <header className="bg-gradient-to-r from-primary to-primary-hover text-primary-foreground shadow-lg">
         <div className="container mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold">Stupa-Sitzungsprotokoll</h1>
-          <p className="text-primary-foreground/80 mt-2">
-            Studentischer Parlamentssitzung - Protokoll-Assistent
-          </p>
+          <div className="flex items-center space-x-4">
+            <img src={stupaLogo} alt="StuPa Logo" className="h-12 w-auto" />
+            <div>
+              <h1 className="text-3xl font-bold">Stupa-Sitzungsprotokoll</h1>
+              <p className="text-primary-foreground/80 mt-2">
+                Studentischer Parlamentssitzung - Protokoll-Assistent
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 
