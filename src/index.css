@@ -2,55 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Professional Student Council Meeting App Design System */
+/* StuPa Professional Meeting App - Enhanced Design System */
 
 @layer base {
   :root {
-    /* Base colors - Professional academic theme */
-    --background: 0 0% 99%;
-    --foreground: 210 20% 12%;
+    /* Base colors - Enhanced contrast and readability */
+    --background: 0 0% 98%;
+    --foreground: 215 25% 15%;
 
-    /* Typography */
+    /* Typography - Better contrast */
     --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 20% 15%;
+    --card-foreground: 215 25% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 20% 15%;
+    --popover-foreground: 215 25% 20%;
 
-    /* Primary - StuPa main blue */
+    /* Primary - StuPa main blue with enhanced variants */
     --primary: 198 100% 46%;
-    --primary-foreground: 0 0% 98%;
-    --primary-hover: 198 100% 40%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 198 100% 52%;
+    --primary-light: 198 100% 85%;
+    --primary-dark: 198 100% 35%;
 
-    /* Secondary - StuPa green */
+    /* Secondary - StuPa green with variants */
     --secondary: 155 35% 59%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 155 40% 65%;
+    --secondary-light: 155 35% 85%;
 
-    /* Muted - Subtle backgrounds */
-    --muted: 210 20% 97%;
-    --muted-foreground: 210 15% 45%;
+    /* Muted - Enhanced subtle colors */
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 15% 50%;
 
-    /* Accent - StuPa orange */
+    /* Accent - StuPa orange with variants */
     --accent: 32 100% 47%;
-    --accent-foreground: 0 0% 98%;
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 32 100% 55%;
+    --accent-light: 32 100% 85%;
 
-    /* Status colors */
+    /* Status colors - Enhanced */
     --success: 155 35% 59%;
-    --success-foreground: 0 0% 98%;
+    --success-foreground: 0 0% 100%;
+    --success-hover: 155 40% 65%;
     --warning: 32 100% 47%;
-    --warning-foreground: 0 0% 98%;
+    --warning-foreground: 0 0% 100%;
+    --warning-hover: 32 100% 55%;
     --destructive: 352 100% 44%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-hover: 352 100% 50%;
 
-    /* Borders and inputs */
-    --border: 210 20% 88%;
-    --input: 210 20% 94%;
+    /* Borders and inputs - Enhanced */
+    --border: 215 15% 85%;
+    --input: 215 15% 92%;
     --ring: 198 100% 46%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     /* Meeting-specific colors */
     --quorum-met: 155 35% 59%;
@@ -58,41 +67,51 @@
     --agenda-active: 198 100% 46%;
     --agenda-completed: 155 35% 59%;
 
-    /* Gradients */
+    /* Enhanced gradients and shadows */
     --gradient-header: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-hover)));
+    --shadow-soft: 0 2px 8px -1px hsl(var(--primary) / 0.1);
+    --shadow-medium: 0 4px 16px -2px hsl(var(--primary) / 0.15);
+    --shadow-strong: 0 8px 32px -4px hsl(var(--primary) / 0.2);
+
+    /* Animation variables */
+    --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-colors: color 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    /* Dark mode - keeping it minimal since this is a professional tool */
-    --background: 210 20% 8%;
-    --foreground: 210 20% 92%;
-    --card: 210 20% 10%;
-    --card-foreground: 210 20% 92%;
-    --popover: 210 20% 10%;
-    --popover-foreground: 210 20% 92%;
-    --primary: 210 85% 60%;
-    --primary-foreground: 210 20% 8%;
-    --primary-hover: 210 85% 65%;
-    --secondary: 210 20% 15%;
-    --secondary-foreground: 210 20% 92%;
-    --muted: 210 20% 12%;
-    --muted-foreground: 210 15% 65%;
-    --accent: 45 85% 65%;
-    --accent-foreground: 210 20% 8%;
-    --success: 140 60% 55%;
-    --success-foreground: 210 20% 8%;
-    --warning: 35 85% 65%;
-    --warning-foreground: 210 20% 8%;
-    --destructive: 0 75% 60%;
-    --destructive-foreground: 210 20% 8%;
-    --border: 210 20% 20%;
-    --input: 210 20% 15%;
-    --ring: 210 85% 60%;
-    --quorum-met: 140 60% 55%;
-    --quorum-missing: 0 75% 60%;
-    --agenda-active: 210 85% 60%;
-    --agenda-completed: 140 60% 55%;
+    /* Enhanced dark mode with improved contrast */
+    --background: 215 25% 8%;
+    --foreground: 215 20% 92%;
+    --card: 215 25% 10%;
+    --card-foreground: 215 20% 92%;
+    --popover: 215 25% 10%;
+    --popover-foreground: 215 20% 92%;
+    --primary: 198 85% 60%;
+    --primary-foreground: 215 25% 8%;
+    --primary-hover: 198 85% 65%;
+    --secondary: 155 40% 55%;
+    --secondary-foreground: 215 25% 8%;
+    --secondary-hover: 155 45% 60%;
+    --muted: 215 25% 12%;
+    --muted-foreground: 215 15% 65%;
+    --accent: 32 85% 60%;
+    --accent-foreground: 215 25% 8%;
+    --accent-hover: 32 85% 65%;
+    --success: 155 50% 55%;
+    --success-foreground: 215 25% 8%;
+    --warning: 32 85% 60%;
+    --warning-foreground: 215 25% 8%;
+    --destructive: 352 75% 60%;
+    --destructive-foreground: 215 25% 8%;
+    --border: 215 25% 20%;
+    --input: 215 25% 15%;
+    --ring: 198 85% 60%;
+    --quorum-met: 155 50% 55%;
+    --quorum-missing: 352 75% 60%;
+    --agenda-active: 198 85% 60%;
+    --agenda-completed: 155 50% 55%;
   }
 }
 
@@ -115,7 +134,54 @@
     color: hsl(var(--foreground));
   }
 
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.25rem; }
+  h1 { font-size: 2rem; font-weight: 700; }
+  h2 { font-size: 1.5rem; font-weight: 600; }
+  h3 { font-size: 1.25rem; font-weight: 600; }
+}
+
+@layer components {
+  /* Enhanced interactive elements */
+  .btn-enhanced {
+    @apply transition-all duration-200 ease-in-out transform;
+  }
+  
+  .btn-enhanced:hover {
+    @apply scale-105 shadow-lg;
+  }
+  
+  .btn-enhanced:active {
+    @apply scale-95;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .card-hover:hover {
+    @apply shadow-medium transform translate-y-[-2px];
+  }
+
+  /* Input focus enhancements */
+  .input-enhanced {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .input-enhanced:focus {
+    @apply ring-2 ring-primary/20 border-primary shadow-soft;
+  }
+
+  /* Text link hover effects */
+  .link-hover {
+    @apply relative transition-colors duration-200 ease-in-out;
+  }
+  
+  .link-hover::after {
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 ease-in-out;
+    content: '';
+  }
+  
+  .link-hover:hover::after {
+    @apply w-full;
+  }
 }
