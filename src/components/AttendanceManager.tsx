@@ -9,17 +9,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Participant } from "@/pages/Index";
+import { RoleManager, Role } from "@/components/RoleManager";
 
 type AttendanceManagerProps = {
   participants: Participant[];
   onUpdate: (participants: Participant[]) => void;
   quorumStatus: { hasQuorum: boolean; present: number; total: number };
+  roles: Role[];
+  onRolesUpdate: (roles: Role[]) => void;
 };
 
-export const AttendanceManager = ({ participants, onUpdate, quorumStatus }: AttendanceManagerProps) => {
+export const AttendanceManager = ({ participants, onUpdate, quorumStatus, roles, onRolesUpdate }: AttendanceManagerProps) => {
   const [newParticipant, setNewParticipant] = useState({
     name: "",
-    role: "" as Participant["role"] | ""
+    role: ""
   });
 
   const addParticipant = () => {
@@ -27,7 +30,7 @@ export const AttendanceManager = ({ participants, onUpdate, quorumStatus }: Atte
       const participant: Participant = {
         id: Date.now().toString(),
         name: newParticipant.name,
-        role: newParticipant.role as Participant["role"],
+        role: newParticipant.role,
         present: true
       };
       onUpdate([...participants, participant]);
@@ -45,11 +48,17 @@ export const AttendanceManager = ({ participants, onUpdate, quorumStatus }: Atte
     ));
   };
 
-  const getRoleColor = (role: Participant["role"]) => {
-    switch (role) {
-      case "Stupa-Mitglied": return "bg-primary text-primary-foreground";
-      case "Referent*in / AStA": return "bg-accent text-accent-foreground";
-      case "Gast": return "bg-muted text-muted-foreground";
+  const getRoleColor = (roleName: string) => {
+    const role = roles.find(r => r.name === roleName);
+    if (!role) return "bg-muted text-muted-foreground";
+    
+    switch (role.color) {
+      case "primary": return "bg-primary text-primary-foreground";
+      case "secondary": return "bg-secondary text-secondary-foreground";
+      case "accent": return "bg-accent text-accent-foreground";
+      case "success": return "bg-success text-success-foreground";
+      case "warning": return "bg-warning text-warning-foreground";
+      case "destructive": return "bg-destructive text-destructive-foreground";
       default: return "bg-muted text-muted-foreground";
     }
   };
@@ -78,7 +87,7 @@ export const AttendanceManager = ({ participants, onUpdate, quorumStatus }: Atte
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-2xl font-bold text-quorum-met">{quorumStatus.present}</div>
-              <div className="text-sm text-muted-foreground">Stupa-Mitglieder</div>
+              <div className="text-sm text-muted-foreground">Stimmberechtigte</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-2xl font-bold text-primary">{participants.length}</div>
@@ -90,8 +99,9 @@ export const AttendanceManager = ({ participants, onUpdate, quorumStatus }: Atte
 
       {/* Add Participant */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Teilnehmer hinzufügen</CardTitle>
+          <RoleManager roles={roles} onUpdate={onRolesUpdate} />
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -107,15 +117,23 @@ export const AttendanceManager = ({ participants, onUpdate, quorumStatus }: Atte
               <Label>Rolle</Label>
               <Select
                 value={newParticipant.role}
-                onValueChange={(value) => setNewParticipant({ ...newParticipant, role: value as Participant["role"] })}
+                onValueChange={(value) => setNewParticipant({ ...newParticipant, role: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="input-enhanced">
                   <SelectValue placeholder="Rolle auswählen" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Stupa-Mitglied">Stupa-Mitglied</SelectItem>
-                  <SelectItem value="Referent*in / AStA">Referent*in / AStA</SelectItem>
-                  <SelectItem value="Gast">Gast</SelectItem>
+                <SelectContent className="z-50 bg-popover border shadow-medium">
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.name}>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded-full ${getRoleColor(role.name).split(' ')[0]}`} />
+                        <span>{role.name}</span>
+                        {role.canVote && (
+                          <Badge variant="outline" className="text-xs ml-2">Stimmberechtigt</Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

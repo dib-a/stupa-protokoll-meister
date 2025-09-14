@@ -7,12 +7,13 @@ import { ProtocolPreview } from "@/components/ProtocolPreview";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MeetingTimeTracker } from "@/components/MeetingTimeTracker";
 import { ProtocolUploader } from "@/components/ProtocolUploader";
+import { Role } from "@/components/RoleManager";
 import stupaLogo from "@/assets/stupa-logo-transparent.png";
 
 export type Participant = {
   id: string;
   name: string;
-  role: "Stupa-Mitglied" | "Gast" | "Referent*in / AStA";
+  role: string; // Now accepts any role name
   present: boolean;
 };
 
@@ -39,17 +40,27 @@ export type MeetingData = {
   };
   nextMeetingDate?: string;
   documents: File[];
+  roles: Role[];
 };
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState<"attendance" | "agenda" | "protocol">("attendance");
+  
+  // Default roles
+  const defaultRoles: Role[] = [
+    { id: "1", name: "Stupa-Mitglied", color: "primary", canVote: true, isDefault: true },
+    { id: "2", name: "Referent*in / AStA", color: "accent", canVote: false, isDefault: true },
+    { id: "3", name: "Gast", color: "muted", canVote: false, isDefault: true }
+  ];
+
   const [meetingData, setMeetingData] = useState<MeetingData>({
     participants: [],
     agendaItems: [],
     meetingTimes: {
       pauses: []
     },
-    documents: []
+    documents: [],
+    roles: defaultRoles
   });
 
   const updateMeetingData = (updates: Partial<MeetingData>) => {
@@ -77,10 +88,11 @@ const Index = () => {
   };
 
   const getQuorumStatus = () => {
-    const stupaMembers = meetingData.participants.filter(p => p.role === "Stupa-Mitglied" && p.present);
-    const totalStupaMembers = meetingData.participants.filter(p => p.role === "Stupa-Mitglied");
-    const hasQuorum = stupaMembers.length >= Math.ceil(totalStupaMembers.length / 2);
-    return { hasQuorum, present: stupaMembers.length, total: totalStupaMembers.length };
+    const votingRoles = meetingData.roles.filter(role => role.canVote).map(role => role.name);
+    const votingMembers = meetingData.participants.filter(p => votingRoles.includes(p.role) && p.present);
+    const totalVotingMembers = meetingData.participants.filter(p => votingRoles.includes(p.role));
+    const hasQuorum = votingMembers.length >= Math.ceil(totalVotingMembers.length / 2);
+    return { hasQuorum, present: votingMembers.length, total: totalVotingMembers.length };
   };
 
   const handleProtocolLoad = (loadedData: any) => {
@@ -89,7 +101,8 @@ const Index = () => {
       participants: loadedData.participants || prev.participants,
       agendaItems: loadedData.agendaItems || prev.agendaItems,
       meetingTimes: loadedData.meetingTimes || prev.meetingTimes,
-      nextMeetingDate: loadedData.nextMeetingDate || prev.nextMeetingDate
+      nextMeetingDate: loadedData.nextMeetingDate || prev.nextMeetingDate,
+      roles: loadedData.roles || prev.roles
     }));
   };
 
@@ -136,6 +149,8 @@ const Index = () => {
                 participants={meetingData.participants}
                 onUpdate={(participants) => updateMeetingData({ participants })}
                 quorumStatus={getQuorumStatus()}
+                roles={meetingData.roles}
+                onRolesUpdate={(roles) => updateMeetingData({ roles })}
               />
             )}
 
