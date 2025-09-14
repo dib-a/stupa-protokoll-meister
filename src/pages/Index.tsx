@@ -6,7 +6,8 @@ import { AgendaManager } from "@/components/AgendaManager";
 import { ProtocolPreview } from "@/components/ProtocolPreview";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MeetingTimeTracker } from "@/components/MeetingTimeTracker";
-import stupaLogo from "@/assets/stupa-logo.png";
+import { ProtocolUploader } from "@/components/ProtocolUploader";
+import stupaLogo from "@/assets/stupa-logo-transparent.png";
 
 export type Participant = {
   id: string;
@@ -82,6 +83,16 @@ const Index = () => {
     return { hasQuorum, present: stupaMembers.length, total: totalStupaMembers.length };
   };
 
+  const handleProtocolLoad = (loadedData: any) => {
+    setMeetingData(prev => ({
+      ...prev,
+      participants: loadedData.participants || prev.participants,
+      agendaItems: loadedData.agendaItems || prev.agendaItems,
+      meetingTimes: loadedData.meetingTimes || prev.meetingTimes,
+      nextMeetingDate: loadedData.nextMeetingDate || prev.nextMeetingDate
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -142,10 +153,13 @@ const Index = () => {
             )}
 
             {currentStep === "protocol" && (
-              <ProtocolPreview 
-                meetingData={meetingData}
-                onNextMeetingDateChange={(date) => updateMeetingData({ nextMeetingDate: date })}
-              />
+              <div className="space-y-6">
+                <ProtocolUploader onProtocolLoad={handleProtocolLoad} />
+                <ProtocolPreview 
+                  meetingData={meetingData}
+                  onNextMeetingDateChange={(date) => updateMeetingData({ nextMeetingDate: date })}
+                />
+              </div>
             )}
           </div>
         </div>
