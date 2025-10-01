@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Calendar, FileText } from "lucide-react";
+import { Download, Calendar, FileText, Square } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,10 @@ import { MeetingData } from "@/pages/Index";
 type ProtocolPreviewProps = {
   meetingData: MeetingData;
   onNextMeetingDateChange: (date: string) => void;
+  onEndMeeting?: () => void;
 };
 
-export const ProtocolPreview = ({ meetingData, onNextMeetingDateChange }: ProtocolPreviewProps) => {
+export const ProtocolPreview = ({ meetingData, onNextMeetingDateChange, onEndMeeting }: ProtocolPreviewProps) => {
   const [isExporting, setIsExporting] = useState(false);
 
   const formatDate = (date: Date) => {
@@ -161,46 +162,61 @@ Ergebnis: ${result}\n`;
   const stats = getCompletionStats();
   const isReadyForExport = stats.hasAttendance && stats.totalItems > 0;
 
+  const canEndMeeting = meetingData.meetingTimes.opening && !meetingData.meetingTimes.closing;
+
   return (
     <div className="space-y-6">
       {/* Export Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="h-5 w-5" />
-            <span>Protokoll-Status</span>
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <span>Protokoll-Status</span>
+            </div>
+            {canEndMeeting && onEndMeeting && (
+              <Button 
+                onClick={onEndMeeting}
+                variant="destructive"
+                size="sm"
+                className="gap-2"
+              >
+                <Square className="h-4 w-4" />
+                Sitzung beenden
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{meetingData.participants.filter(p => p.present).length}</div>
-              <div className="text-sm text-muted-foreground">Anwesend</div>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="text-center p-4 bg-primary/5 rounded-lg">
+              <div className="text-3xl font-bold text-primary">{meetingData.participants.filter(p => p.present).length}</div>
+              <div className="text-sm text-muted-foreground mt-1">Anwesend</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-agenda-active">{stats.totalItems}</div>
-              <div className="text-sm text-muted-foreground">TOPs</div>
+            <div className="text-center p-4 bg-agenda-active/5 rounded-lg">
+              <div className="text-3xl font-bold text-agenda-active">{stats.totalItems}</div>
+              <div className="text-sm text-muted-foreground mt-1">TOPs</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-agenda-completed">{stats.completedItems}</div>
-              <div className="text-sm text-muted-foreground">Abgeschlossen</div>
+            <div className="text-center p-4 bg-agenda-completed/5 rounded-lg">
+              <div className="text-3xl font-bold text-agenda-completed">{stats.completedItems}</div>
+              <div className="text-sm text-muted-foreground mt-1">Abgeschlossen</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-accent">
+            <div className="text-center p-4 bg-accent/5 rounded-lg">
+              <div className="text-3xl font-bold text-accent">
                 {stats.totalItems > 0 ? Math.round((stats.completedItems / stats.totalItems) * 100) : 0}%
               </div>
-              <div className="text-sm text-muted-foreground">Fortschritt</div>
+              <div className="text-sm text-muted-foreground mt-1">Fortschritt</div>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Badge variant={stats.hasAttendance ? "default" : "outline"}>
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Badge variant={stats.hasAttendance ? "default" : "outline"} className="text-sm py-1">
               {stats.hasAttendance ? "✓" : "○"} Teilnehmerliste
             </Badge>
-            <Badge variant={stats.totalItems > 0 ? "default" : "outline"}>
+            <Badge variant={stats.totalItems > 0 ? "default" : "outline"} className="text-sm py-1">
               {stats.totalItems > 0 ? "✓" : "○"} Tagesordnung
             </Badge>
-            <Badge variant={stats.hasTimes ? "default" : "outline"}>
+            <Badge variant={stats.hasTimes ? "default" : "outline"} className="text-sm py-1">
               {stats.hasTimes ? "✓" : "○"} Sitzungszeiten
             </Badge>
           </div>
@@ -209,6 +225,7 @@ Ergebnis: ${result}\n`;
             onClick={exportProtocol}
             disabled={!isReadyForExport || isExporting}
             className="w-full"
+            size="lg"
           >
             <Download className="h-4 w-4 mr-2" />
             {isExporting ? "Wird erstellt..." : "Protokoll exportieren"}
@@ -217,35 +234,38 @@ Ergebnis: ${result}\n`;
       </Card>
 
       {/* Next Meeting */}
-      <Card>
-        <CardHeader>
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="bg-gradient-to-r from-accent/5 to-accent/10">
           <CardTitle className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5" />
+            <Calendar className="h-5 w-5 text-accent" />
             <span>Nächste Sitzung</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div>
-            <Label>Datum der nächsten Sitzung</Label>
+            <Label className="text-sm font-medium">Datum der nächsten Sitzung</Label>
             <Input
               type="text"
               value={meetingData.nextMeetingDate || ""}
               onChange={(e) => onNextMeetingDateChange(e.target.value)}
               placeholder="z.B. Montag, 15. Januar 2024, 14:00 Uhr"
-              className="mt-1"
+              className="mt-2"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Protocol Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Protokoll-Vorschau</CardTitle>
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="bg-gradient-to-r from-secondary/5 to-secondary/10">
+          <CardTitle className="flex items-center space-x-2">
+            <FileText className="h-5 w-5 text-secondary" />
+            <span>Protokoll-Vorschau</span>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="bg-muted/30 p-4 rounded-lg max-h-96 overflow-y-auto">
-            <div className="text-sm whitespace-pre-wrap font-mono">
+        <CardContent className="pt-6">
+          <div className="bg-muted/40 p-6 rounded-lg max-h-[600px] overflow-y-auto border border-border/50">
+            <div className="text-sm whitespace-pre-wrap font-mono leading-relaxed">
               {generateProtocolText().split('\n').map((line, index) => {
                 // Check if this line contains a document name that should be clickable
                 const docMatch = line.match(/^Dokument: (.+)$/);

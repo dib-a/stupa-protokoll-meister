@@ -173,6 +173,28 @@ const Index = () => {
                 <ProtocolPreview 
                   meetingData={meetingData}
                   onNextMeetingDateChange={(date) => updateMeetingData({ nextMeetingDate: date })}
+                  onEndMeeting={() => {
+                    const formatCurrentTime = () => {
+                      return new Date().toLocaleTimeString('de-DE', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      });
+                    };
+                    
+                    let updatedPauses = [...meetingData.meetingTimes.pauses];
+                    const lastPause = updatedPauses[updatedPauses.length - 1];
+                    if (lastPause && !lastPause.end) {
+                      lastPause.end = formatCurrentTime();
+                    }
+                    
+                    updateMeetingData({ 
+                      meetingTimes: {
+                        ...meetingData.meetingTimes,
+                        pauses: updatedPauses,
+                        closing: formatCurrentTime()
+                      }
+                    });
+                  }}
                 />
               </div>
             )}

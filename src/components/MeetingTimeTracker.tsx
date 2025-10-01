@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Clock, Play, Pause, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +18,19 @@ type MeetingTimeTrackerProps = {
 
 export const MeetingTimeTracker = ({ meetingTimes, onUpdate }: MeetingTimeTrackerProps) => {
   const [isPaused, setIsPaused] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const formatCurrentTime = () => {
-    return new Date().toLocaleTimeString('de-DE', { 
+    return currentTime.toLocaleTimeString('de-DE', { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
