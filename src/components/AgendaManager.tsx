@@ -13,9 +13,10 @@ type AgendaManagerProps = {
   agendaItems: AgendaItem[];
   onUpdate: (items: AgendaItem[]) => void;
   eligibleVoters?: number;
+  isMeetingActive?: boolean;
 };
 
-export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0 }: AgendaManagerProps) => {
+export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMeetingActive = false }: AgendaManagerProps) => {
   const [newItemTitle, setNewItemTitle] = useState("");
   const [editingVote, setEditingVote] = useState<string | null>(null);
   const [voteData, setVoteData] = useState({ ja: 0, nein: 0, enthaltungen: 0 });
@@ -186,6 +187,11 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0 }: Age
                           ⚠️ Anzahl der Stimmen ({voteData.ja + voteData.nein + voteData.enthaltungen}) entspricht nicht der Anzahl stimmberechtigter Teilnehmer ({eligibleVoters})
                         </div>
                       )}
+                      {!isMeetingActive && (
+                        <div className="mb-3 p-2 bg-destructive/10 border border-destructive rounded-md text-sm text-destructive">
+                          ⚠️ Die Sitzung muss gestartet sein, um Abstimmungen zu erfassen
+                        </div>
+                      )}
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         <div>
                           <Label>Ja-Stimmen</Label>
@@ -216,7 +222,13 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0 }: Age
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <Button onClick={() => saveVotingResult(item.id)}>
+                        <Button 
+                          onClick={() => saveVotingResult(item.id)}
+                          disabled={
+                            !isMeetingActive || 
+                            (eligibleVoters > 0 && (voteData.ja + voteData.nein + voteData.enthaltungen) !== eligibleVoters)
+                          }
+                        >
                           Abstimmung speichern
                         </Button>
                         <Button variant="outline" onClick={() => setEditingVote(null)}>
@@ -262,7 +274,10 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0 }: Age
                           </Button>
                         </div>
                       ) : (
-                        <Button onClick={() => startVoting(item.id)}>
+                        <Button 
+                          onClick={() => startVoting(item.id)}
+                          disabled={!isMeetingActive}
+                        >
                           <Vote className="h-4 w-4 mr-2" />
                           Abstimmung erfassen
                         </Button>

@@ -164,6 +164,7 @@ const Index = () => {
                   agendaItems={meetingData.agendaItems}
                   onUpdate={(agendaItems) => updateMeetingData({ agendaItems })}
                   eligibleVoters={getQuorumStatus().present}
+                  isMeetingActive={!!meetingData.meetingTimes.opening && !meetingData.meetingTimes.closing}
                 />
               </div>
             )}
