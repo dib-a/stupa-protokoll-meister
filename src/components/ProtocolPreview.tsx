@@ -41,6 +41,15 @@ export const ProtocolPreview = ({ meetingData, onNextMeetingDateChange, onEndMee
 Sitzung des Studierendenparlaments
 ${currentDate}
 
+═══════════════════════════════════════════════════
+
+SITZUNGSZEITEN:
+${meetingData.meetingTimes.opening ? `Beginn: ${meetingData.meetingTimes.opening} Uhr` : 'Beginn: [Noch nicht erfasst]'}
+${meetingData.meetingTimes.closing ? `Ende: ${meetingData.meetingTimes.closing} Uhr` : 'Ende: [Sitzung läuft]'}
+${meetingData.meetingTimes.pauses.length > 0 ? `\nPausen:` : ''}${meetingData.meetingTimes.pauses.map((pause, index) => `\n  • ${pause.start} - ${pause.end || "läuft"} Uhr`).join('')}
+
+═══════════════════════════════════════════════════
+
 ANWESENHEIT:
 Stupa-Mitglieder (${stupaMembers.length}):
 ${stupaMembers.map(p => `• ${p.name}`).join('\n')}
@@ -63,25 +72,8 @@ ${guests.map(p => `• ${p.name}`).join('\n')}
 
     protocol += `BESCHLUSSFÄHIGKEIT: ${stupaMembers.length >= Math.ceil(meetingData.participants.filter(p => p.role === "Stupa-Mitglied").length / 2) ? "GEGEBEN" : "NICHT GEGEBEN"}
 
+═══════════════════════════════════════════════════
 `;
-
-    if (meetingData.meetingTimes.opening) {
-      protocol += `SITZUNGSZEITEN:
-Eröffnung: ${meetingData.meetingTimes.opening} Uhr
-`;
-
-      if (meetingData.meetingTimes.pauses.length > 0) {
-        protocol += `Pausen:\n`;
-        meetingData.meetingTimes.pauses.forEach((pause, index) => {
-          protocol += `  ${pause.start} - ${pause.end || "offen"} Uhr\n`;
-        });
-      }
-
-      if (meetingData.meetingTimes.closing) {
-        protocol += `Schluss: ${meetingData.meetingTimes.closing} Uhr\n`;
-      }
-      protocol += '\n';
-    }
 
     protocol += `TAGESORDNUNG:
 
