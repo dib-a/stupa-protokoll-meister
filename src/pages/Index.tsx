@@ -163,6 +163,7 @@ const Index = () => {
                 <AgendaManager
                   agendaItems={meetingData.agendaItems}
                   onUpdate={(agendaItems) => updateMeetingData({ agendaItems })}
+                  eligibleVoters={getQuorumStatus().present}
                 />
               </div>
             )}

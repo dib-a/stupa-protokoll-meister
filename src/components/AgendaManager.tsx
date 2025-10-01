@@ -12,9 +12,10 @@ import { AgendaItem } from "@/pages/Index";
 type AgendaManagerProps = {
   agendaItems: AgendaItem[];
   onUpdate: (items: AgendaItem[]) => void;
+  eligibleVoters?: number;
 };
 
-export const AgendaManager = ({ agendaItems, onUpdate }: AgendaManagerProps) => {
+export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0 }: AgendaManagerProps) => {
   const [newItemTitle, setNewItemTitle] = useState("");
   const [editingVote, setEditingVote] = useState<string | null>(null);
   const [voteData, setVoteData] = useState({ ja: 0, nein: 0, enthaltungen: 0 });
@@ -169,10 +170,22 @@ export const AgendaManager = ({ agendaItems, onUpdate }: AgendaManagerProps) => 
                   {/* Voting Section */}
                   {editingVote === item.id ? (
                     <div className="border rounded-lg p-4 bg-muted/20">
-                      <h4 className="font-medium mb-3 flex items-center">
-                        <Vote className="h-4 w-4 mr-2" />
-                        Abstimmungsergebnis erfassen
-                      </h4>
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium flex items-center">
+                          <Vote className="h-4 w-4 mr-2" />
+                          Abstimmungsergebnis erfassen
+                        </h4>
+                        {eligibleVoters > 0 && (
+                          <Badge variant="outline" className="text-sm">
+                            {eligibleVoters} stimmberechtigte Teilnehmer
+                          </Badge>
+                        )}
+                      </div>
+                      {eligibleVoters > 0 && (voteData.ja + voteData.nein + voteData.enthaltungen) !== eligibleVoters && (
+                        <div className="mb-3 p-2 bg-warning/10 border border-warning rounded-md text-sm text-warning">
+                          ⚠️ Anzahl der Stimmen ({voteData.ja + voteData.nein + voteData.enthaltungen}) entspricht nicht der Anzahl stimmberechtigter Teilnehmer ({eligibleVoters})
+                        </div>
+                      )}
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         <div>
                           <Label>Ja-Stimmen</Label>
