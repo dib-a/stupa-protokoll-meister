@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AgendaItem } from "@/pages/Index";
+import { DefaultTOPsManager } from "./DefaultTOPsManager";
 
 type AgendaManagerProps = {
   agendaItems: AgendaItem[];
@@ -77,6 +78,17 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
     }
   };
 
+  const handleLoadDefaults = (defaultTOPs: Array<{ title: string }>) => {
+    const newItems = defaultTOPs.map(top => ({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: top.title,
+      votingResult: null,
+      notes: "",
+      completed: false
+    }));
+    onUpdate([...agendaItems, ...newItems]);
+  };
+
   const getVoteResultStatus = (result: AgendaItem["votingResult"]) => {
     if (!result) return null;
     const total = result.ja + result.nein + result.enthaltungen;
@@ -108,6 +120,9 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
               <Plus className="h-4 w-4 mr-2" />
               Hinzufügen
             </Button>
+          </div>
+          <div className="flex justify-end">
+            <DefaultTOPsManager onLoadDefaults={handleLoadDefaults} />
           </div>
         </CardContent>
       </Card>
