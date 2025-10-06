@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Calendar, FileText, Square, FileDown } from "lucide-react";
+import { Download, Calendar, FileText, Square, FileDown, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,17 +172,17 @@ Ergebnis: ${result}\n`;
     setIsExporting(false);
   };
 
-  const exportProtocolTXT = async () => {
+  const exportMeetingDataJSON = async () => {
     setIsExporting(true);
     
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    const protocolText = generateProtocolText();
-    const blob = new Blob([protocolText], { type: 'text/plain;charset=utf-8' });
+    const jsonData = JSON.stringify(meetingData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Stupa-Protokoll_${new Date().toISOString().split('T')[0]}.txt`;
+    link.download = `Stupa-Sitzung_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -262,25 +262,25 @@ Ergebnis: ${result}\n`;
             </Badge>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3">
             <Button 
               onClick={exportProtocolPDF}
               disabled={!isReadyForExport || isExporting}
-              className="flex-1"
+              className="w-full"
               size="lg"
             >
               <FileDown className="h-4 w-4 mr-2" />
-              {isExporting ? "Wird erstellt..." : "Als PDF exportieren"}
+              {isExporting ? "Wird erstellt..." : "Protokoll als PDF exportieren"}
             </Button>
             <Button 
-              onClick={exportProtocolTXT}
-              disabled={!isReadyForExport || isExporting}
+              onClick={exportMeetingDataJSON}
+              disabled={isExporting}
               variant="outline"
-              className="flex-1"
+              className="w-full"
               size="lg"
             >
-              <Download className="h-4 w-4 mr-2" />
-              {isExporting ? "Wird erstellt..." : "Als TXT exportieren"}
+              <Save className="h-4 w-4 mr-2" />
+              {isExporting ? "Wird gespeichert..." : "Sitzungsdaten speichern (JSON)"}
             </Button>
           </div>
         </CardContent>

@@ -1,12 +1,9 @@
 import { useState } from "react";
-import { Upload, FileText, Edit3 } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import * as pdfjsLib from "pdfjs-dist";
 
 type ProtocolUploaderProps = {
   onProtocolLoad: (protocolData: any) => void;
@@ -14,41 +11,7 @@ type ProtocolUploaderProps = {
 
 export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadedProtocol, setUploadedProtocol] = useState<string>("");
-  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
-
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    try {
-      console.log('Starting PDF extraction for file:', file.name);
-      const arrayBuffer = await file.arrayBuffer();
-      console.log('Array buffer created, size:', arrayBuffer.byteLength);
-      
-      // Load PDF without worker to avoid Vite issues
-      const pdf = await pdfjsLib.getDocument({ 
-        data: arrayBuffer,
-        useWorkerFetch: false,
-        isEvalSupported: false,
-        useSystemFonts: true
-      }).promise;
-      console.log('PDF loaded, pages:', pdf.numPages);
-      
-      let fullText = '';
-
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item: any) => item.str).join(' ');
-        fullText += pageText + '\n';
-      }
-
-      console.log('Text extraction complete, length:', fullText.length);
-      return fullText;
-    } catch (error) {
-      console.error('PDF extraction error:', error);
-      throw error;
-    }
-  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -56,10 +19,10 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
 
     console.log('File selected:', file.name, 'Type:', file.type);
 
-    if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
       toast({
         title: "Dateityp nicht unterstützt",
-        description: "Bitte laden Sie eine PDF-Datei hoch.",
+        description: "Bitte laden Sie eine JSON-Datei hoch.",
         variant: "destructive"
       });
       return;
@@ -68,127 +31,24 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
     setIsUploading(true);
     
     try {
-      const text = await extractTextFromPDF(file);
-      console.log('Extracted text preview:', text.substring(0, 200));
-      setUploadedProtocol(text);
-      parseProtocol(text);
+      const text = await file.text();
+      const meetingData = JSON.parse(text);
+      
+      onProtocolLoad(meetingData);
       
       toast({
-        title: "Protokoll geladen",
-        description: "Das PDF-Protokoll wurde erfolgreich geladen und kann nun bearbeitet werden.",
+        title: "Sitzungsdaten geladen",
+        description: "Die Sitzungsdaten wurden erfolgreich geladen.",
       });
     } catch (error) {
       console.error('Upload error details:', error);
       toast({
         title: "Fehler beim Laden",
-        description: `Das Protokoll konnte nicht geladen werden. Fehler: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`,
+        description: `Die Datei konnte nicht geladen werden. Stellen Sie sicher, dass es eine gültige JSON-Datei ist.`,
         variant: "destructive"
       });
     } finally {
       setIsUploading(false);
-    }
-  };
-
-  const parseProtocol = (text: string) => {
-    // Simple parsing logic to extract meeting data from protocol text
-    const lines = text.split('\n');
-    
-    // Extract participants
-    const participants = [];
-    let inAttendanceSection = false;
-    
-    // Extract agenda items
-    const agendaItems = [];
-    
-    // Parse through lines to reconstruct meeting data
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      if (line.includes('ANWESENHEIT:')) {
-        inAttendanceSection = true;
-        continue;
-      }
-      
-      if (line.startsWith('TOP ') && line.includes(':')) {
-        const topMatch = line.match(/^TOP (\d+): (.+)$/);
-        if (topMatch) {
-          const [, number, title] = topMatch;
-          const agendaItem = {
-            id: `top-${number}`,
-            title: title,
-            completed: false,
-            notes: "",
-            documentName: "",
-            votingResult: null
-          };
-          
-          // Look for voting results in subsequent lines
-          for (let j = i + 1; j < lines.length && j < i + 5; j++) {
-            const nextLine = lines[j].trim();
-            if (nextLine.startsWith('Abstimmungsergebnis:')) {
-              const voteMatch = nextLine.match(/(\d+) Ja, (\d+) Nein, (\d+) Enthaltungen/);
-              if (voteMatch) {
-                agendaItem.votingResult = {
-                  ja: parseInt(voteMatch[1]),
-                  nein: parseInt(voteMatch[2]),
-                  enthaltungen: parseInt(voteMatch[3])
-                };
-                agendaItem.completed = true;
-              }
-            }
-            if (nextLine.startsWith('Dokument:')) {
-              agendaItem.documentName = nextLine.replace('Dokument: ', '');
-            }
-            if (nextLine.startsWith('Anmerkung:')) {
-              agendaItem.notes = nextLine.replace('Anmerkung: ', '');
-            }
-          }
-          
-          agendaItems.push(agendaItem);
-        }
-      }
-      
-      if (inAttendanceSection && line.startsWith('• ')) {
-        const name = line.replace('• ', '');
-        if (name) {
-          participants.push({
-            id: `participant-${Date.now()}-${Math.random()}`,
-            name: name,
-            role: "Stupa-Mitglied", // Default role, could be enhanced
-            present: true
-          });
-        }
-      }
-      
-      if (line.includes('BESCHLUSSFÄHIGKEIT:') || line.includes('SITZUNGSZEITEN:')) {
-        inAttendanceSection = false;
-      }
-    }
-
-    // Create meeting data object
-    const meetingData = {
-      participants,
-      agendaItems,
-      documents: [],
-      meetingTimes: {
-        opening: "",
-        closing: "",
-        pauses: []
-      },
-      nextMeetingDate: ""
-    };
-
-    onProtocolLoad(meetingData);
-  };
-
-  const handleProtocolEdit = () => {
-    if (uploadedProtocol) {
-      parseProtocol(uploadedProtocol);
-      setIsEditing(false);
-      toast({
-        title: "Änderungen übernommen",
-        description: "Das bearbeitete Protokoll wurde geladen.",
-      });
     }
   };
 
@@ -197,61 +57,23 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Upload className="h-5 w-5" />
-          <span>Protokoll hochladen & bearbeiten</span>
+          <span>Sitzungsdaten laden</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label>Bestehendes Protokoll hochladen (.pdf)</Label>
+          <Label>Sitzungsdaten laden (JSON)</Label>
           <Input
             type="file"
-            accept=".pdf"
+            accept=".json"
             onChange={handleFileUpload}
             disabled={isUploading}
             className="mt-1"
           />
           <p className="text-sm text-muted-foreground mt-1">
-            Laden Sie ein PDF-Protokoll hoch, um es zu bearbeiten oder zu ergänzen.
+            Laden Sie eine zuvor exportierte JSON-Datei, um eine Sitzung fortzusetzen.
           </p>
         </div>
-
-        {uploadedProtocol && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Protokoll bearbeiten</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                <Edit3 className="h-4 w-4 mr-2" />
-                {isEditing ? "Vorschau" : "Bearbeiten"}
-              </Button>
-            </div>
-            
-            {isEditing ? (
-              <div className="space-y-3">
-                <Textarea
-                  value={uploadedProtocol}
-                  onChange={(e) => setUploadedProtocol(e.target.value)}
-                  className="min-h-[200px] font-mono text-sm"
-                  placeholder="Protokoll-Inhalt bearbeiten..."
-                />
-                <Button onClick={handleProtocolEdit} className="w-full">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Änderungen übernehmen
-                </Button>
-              </div>
-            ) : (
-              <div className="bg-muted/30 p-3 rounded-lg max-h-[200px] overflow-y-auto">
-                <div className="text-sm whitespace-pre-wrap font-mono">
-                  {uploadedProtocol.split('\n').slice(0, 10).join('\n')}
-                  {uploadedProtocol.split('\n').length > 10 && '\n...'}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
