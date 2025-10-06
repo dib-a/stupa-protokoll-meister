@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import * as pdfjsLib from "pdfjs-dist";
 
 type ProtocolUploaderProps = {
   onProtocolLoad: (protocolData: any) => void;
@@ -17,14 +18,32 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
+  // Configure PDF.js worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(' ');
+      fullText += pageText + '\n';
+    }
+
+    return fullText;
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'text/plain' && !file.name.endsWith('.txt')) {
+    if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
       toast({
         title: "Dateityp nicht unterstützt",
-        description: "Bitte laden Sie eine .txt Datei hoch.",
+        description: "Bitte laden Sie eine PDF-Datei hoch.",
         variant: "destructive"
       });
       return;
@@ -33,13 +52,13 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
     setIsUploading(true);
     
     try {
-      const text = await file.text();
+      const text = await extractTextFromPDF(file);
       setUploadedProtocol(text);
       parseProtocol(text);
       
       toast({
         title: "Protokoll geladen",
-        description: "Das Protokoll wurde erfolgreich geladen und kann nun bearbeitet werden.",
+        description: "Das PDF-Protokoll wurde erfolgreich geladen und kann nun bearbeitet werden.",
       });
     } catch (error) {
       toast({
@@ -165,16 +184,16 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label>Bestehendes Protokoll hochladen (.txt)</Label>
+          <Label>Bestehendes Protokoll hochladen (.pdf)</Label>
           <Input
             type="file"
-            accept=".txt"
+            accept=".pdf"
             onChange={handleFileUpload}
             disabled={isUploading}
             className="mt-1"
           />
           <p className="text-sm text-muted-foreground mt-1">
-            Laden Sie ein bereits erstelltes Protokoll hoch, um es zu bearbeiten oder zu ergänzen.
+            Laden Sie ein PDF-Protokoll hoch, um es zu bearbeiten oder zu ergänzen.
           </p>
         </div>
 
