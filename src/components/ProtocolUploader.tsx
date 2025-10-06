@@ -18,8 +18,8 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
-  // Configure PDF.js worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  // Configure PDF.js worker - use unpkg as a reliable CDN
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
     const arrayBuffer = await file.arrayBuffer();
