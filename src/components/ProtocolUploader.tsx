@@ -22,23 +22,36 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
+    try {
+      console.log('Starting PDF extraction for file:', file.name);
+      const arrayBuffer = await file.arrayBuffer();
+      console.log('Array buffer created, size:', arrayBuffer.byteLength);
+      
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      console.log('PDF loaded, pages:', pdf.numPages);
+      
+      let fullText = '';
 
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map((item: any) => item.str).join(' ');
-      fullText += pageText + '\n';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(' ');
+        fullText += pageText + '\n';
+      }
+
+      console.log('Text extraction complete, length:', fullText.length);
+      return fullText;
+    } catch (error) {
+      console.error('PDF extraction error:', error);
+      throw error;
     }
-
-    return fullText;
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    console.log('File selected:', file.name, 'Type:', file.type);
 
     if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
       toast({
@@ -53,6 +66,7 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
     
     try {
       const text = await extractTextFromPDF(file);
+      console.log('Extracted text preview:', text.substring(0, 200));
       setUploadedProtocol(text);
       parseProtocol(text);
       
@@ -61,9 +75,10 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
         description: "Das PDF-Protokoll wurde erfolgreich geladen und kann nun bearbeitet werden.",
       });
     } catch (error) {
+      console.error('Upload error details:', error);
       toast({
         title: "Fehler beim Laden",
-        description: "Das Protokoll konnte nicht geladen werden.",
+        description: `Das Protokoll konnte nicht geladen werden. Fehler: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`,
         variant: "destructive"
       });
     } finally {
