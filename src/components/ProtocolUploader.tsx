@@ -18,16 +18,19 @@ export const ProtocolUploader = ({ onProtocolLoad }: ProtocolUploaderProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
-  // Configure PDF.js worker - use unpkg as a reliable CDN
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
-
   const extractTextFromPDF = async (file: File): Promise<string> => {
     try {
       console.log('Starting PDF extraction for file:', file.name);
       const arrayBuffer = await file.arrayBuffer();
       console.log('Array buffer created, size:', arrayBuffer.byteLength);
       
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      // Load PDF without worker to avoid Vite issues
+      const pdf = await pdfjsLib.getDocument({ 
+        data: arrayBuffer,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true
+      }).promise;
       console.log('PDF loaded, pages:', pdf.numPages);
       
       let fullText = '';
