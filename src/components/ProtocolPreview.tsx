@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Download, Calendar, FileText, Square } from "lucide-react";
+import { Download, Calendar, FileText, Square, FileDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { MeetingData } from "@/pages/Index";
+import jsPDF from "jspdf";
 
 type ProtocolPreviewProps = {
   meetingData: MeetingData;
@@ -122,11 +122,60 @@ Ergebnis: ${result}\n`;
     return protocol;
   };
 
-  const exportProtocol = async () => {
+  const exportProtocolPDF = async () => {
     setIsExporting(true);
     
-    // Simulate export process
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const doc = new jsPDF();
+    const protocolText = generateProtocolText();
+    const lines = protocolText.split('\n');
+    
+    let y = 20;
+    const lineHeight = 7;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20;
+    
+    doc.setFont("helvetica");
+    
+    lines.forEach((line) => {
+      if (y > pageHeight - margin) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      // Handle special formatting
+      if (line.includes('PROTOKOLL') || line.includes('═══')) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+      } else if (line.startsWith('TOP ') || line.includes('SITZUNGSZEITEN:') || line.includes('ANWESENHEIT:') || line.includes('TAGESORDNUNG:') || line.includes('ANLAGEN:')) {
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+      } else {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+      }
+      
+      // Split long lines to fit page width
+      const splitText = doc.splitTextToSize(line || ' ', 170);
+      splitText.forEach((textLine: string) => {
+        if (y > pageHeight - margin) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(textLine, 20, y);
+        y += lineHeight;
+      });
+    });
+    
+    doc.save(`Stupa-Protokoll_${new Date().toISOString().split('T')[0]}.pdf`);
+    setIsExporting(false);
+  };
+
+  const exportProtocolTXT = async () => {
+    setIsExporting(true);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     const protocolText = generateProtocolText();
     const blob = new Blob([protocolText], { type: 'text/plain;charset=utf-8' });
@@ -213,15 +262,27 @@ Ergebnis: ${result}\n`;
             </Badge>
           </div>
 
-          <Button 
-            onClick={exportProtocol}
-            disabled={!isReadyForExport || isExporting}
-            className="w-full"
-            size="lg"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {isExporting ? "Wird erstellt..." : "Protokoll exportieren"}
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={exportProtocolPDF}
+              disabled={!isReadyForExport || isExporting}
+              className="flex-1"
+              size="lg"
+            >
+              <FileDown className="h-4 w-4 mr-2" />
+              {isExporting ? "Wird erstellt..." : "Als PDF exportieren"}
+            </Button>
+            <Button 
+              onClick={exportProtocolTXT}
+              disabled={!isReadyForExport || isExporting}
+              variant="outline"
+              className="flex-1"
+              size="lg"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? "Wird erstellt..." : "Als TXT exportieren"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
