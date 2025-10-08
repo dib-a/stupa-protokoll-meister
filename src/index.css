@@ -126,42 +126,107 @@
 @layer components {
   /* Enhanced interactive elements */
   .btn-enhanced {
-    @apply transition-all duration-200 ease-in-out transform active:scale-95;
+    @apply transition-all duration-300 ease-in-out transform active:scale-95;
   }
   
   .btn-enhanced:hover:not(:disabled) {
     @apply brightness-110 shadow-lg;
   }
 
-  /* Card hover effects */
+  /* Card hover effects with subtle lift and glow */
   .card-hover {
-    @apply transition-all duration-200 ease-in-out;
+    @apply transition-all duration-300 ease-out;
+    position: relative;
   }
   
   .card-hover:hover {
-    @apply shadow-lg transform translate-y-[-2px];
+    @apply transform translate-y-[-4px];
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Secondary hover effects (green) */
+  .hover-secondary {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-secondary:hover:not(:disabled) {
+    @apply bg-secondary-hover transform scale-105;
+    box-shadow: 0 8px 20px -6px rgba(98, 178, 139, 0.4);
+  }
+
+  /* Accent hover effects (orange) */
+  .hover-accent {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-accent:hover:not(:disabled) {
+    @apply bg-accent-hover transform scale-105;
+    box-shadow: 0 8px 20px -6px rgba(239, 110, 0, 0.4);
+  }
+
+  /* Outline/Ghost button hover with border glow */
+  .hover-outline {
+    @apply transition-all duration-300 ease-out relative;
+  }
+  
+  .hover-outline:hover:not(:disabled) {
+    @apply bg-muted/50 border-foreground/30 transform scale-[1.02];
+    box-shadow: 0 0 0 3px rgba(107, 121, 140, 0.1);
+  }
+
+  /* Destructive hover effects (red) */
+  .hover-destructive {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-destructive:hover:not(:disabled) {
+    @apply bg-destructive-hover transform scale-105;
+    box-shadow: 0 8px 20px -6px rgba(224, 33, 33, 0.4);
   }
 
   /* Input focus enhancements */
   .input-enhanced {
-    @apply transition-all duration-200 ease-in-out;
+    @apply transition-all duration-300 ease-out;
   }
   
   .input-enhanced:focus {
-    @apply ring-2 ring-primary/20 border-primary shadow-sm;
+    @apply ring-2 ring-primary/20 border-primary shadow-sm transform scale-[1.01];
   }
 
-  /* Text link hover effects */
+  /* Text link hover effects with underline animation */
   .link-hover {
-    @apply relative transition-colors duration-200 ease-in-out;
+    @apply relative transition-colors duration-300 ease-out;
   }
   
   .link-hover::after {
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 ease-in-out;
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-accent transition-all duration-300 ease-out;
     content: '';
   }
   
   .link-hover:hover::after {
     @apply w-full;
+  }
+
+  .link-hover:hover {
+    @apply text-accent;
+  }
+
+  /* Interactive icon buttons */
+  .icon-btn-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .icon-btn-hover:hover:not(:disabled) {
+    @apply bg-muted transform rotate-[5deg] scale-110;
+  }
+
+  /* Badge hover effects */
+  .badge-hover {
+    @apply transition-all duration-300 ease-out cursor-pointer;
+  }
+
+  .badge-hover:hover {
+    @apply brightness-110 transform scale-105;
+    filter: brightness(1.1) saturate(1.2);
   }
 }
