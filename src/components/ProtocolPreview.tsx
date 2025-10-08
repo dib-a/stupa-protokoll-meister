@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Calendar, FileText, Square, FileDown, Save } from "lucide-react";
+import { Download, Calendar, FileText, Square, FileDown, Save, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { MeetingData } from "@/pages/Index";
 import jsPDF from "jspdf";
 import stupaLogo from "@/assets/stupa-logo-transparent.png";
+import { PDFViewer } from "@/components/PDFViewer";
 
 type ProtocolPreviewProps = {
   meetingData: MeetingData;
@@ -17,6 +18,16 @@ type ProtocolPreviewProps = {
 
 export const ProtocolPreview = ({ meetingData, onNextMeetingDateChange, onEndMeeting }: ProtocolPreviewProps) => {
   const [isExporting, setIsExporting] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<File | null>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+
+  const handleViewDocument = (docName: string) => {
+    const document = meetingData.documents.find(doc => doc.name === docName);
+    if (document) {
+      setViewingDocument(document);
+      setIsViewerOpen(true);
+    }
+  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('de-DE', {
@@ -424,6 +435,14 @@ Ergebnis: ${result}\n`;
 
   return (
     <div className="space-y-6">
+      <PDFViewer 
+        file={viewingDocument}
+        isOpen={isViewerOpen}
+        onClose={() => {
+          setIsViewerOpen(false);
+          setViewingDocument(null);
+        }}
+      />
       {/* Export Status */}
       <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
@@ -543,17 +562,16 @@ Ergebnis: ${result}\n`;
                   const docName = docMatch[1];
                   const document = meetingData.documents.find(doc => doc.name === docName);
                   if (document) {
-                    const url = URL.createObjectURL(document);
                     return (
-                      <div key={index}>
-                        Dokument: <a 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline cursor-pointer"
+                      <div key={index} className="flex items-center gap-2">
+                        Dokument: 
+                        <button
+                          onClick={() => handleViewDocument(docName)}
+                          className="text-primary hover:underline cursor-pointer inline-flex items-center gap-1 hover-accent"
                         >
+                          <Eye className="h-3 w-3" />
                           {docName}
-                        </a>
+                        </button>
                       </div>
                     );
                   }
@@ -565,17 +583,16 @@ Ergebnis: ${result}\n`;
                   const docName = topDocMatch[2];
                   const document = meetingData.documents.find(doc => doc.name === docName);
                   if (document) {
-                    const url = URL.createObjectURL(document);
                     return (
-                      <div key={index}>
-                        TOP {topDocMatch[1]}: <a 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline cursor-pointer"
+                      <div key={index} className="flex items-center gap-2">
+                        TOP {topDocMatch[1]}: 
+                        <button
+                          onClick={() => handleViewDocument(docName)}
+                          className="text-primary hover:underline cursor-pointer inline-flex items-center gap-1 hover-accent"
                         >
+                          <Eye className="h-3 w-3" />
                           {docName}
-                        </a>
+                        </button>
                       </div>
                     );
                   }
