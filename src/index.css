@@ -140,8 +140,8 @@
   }
   
   .card-hover:hover {
-    @apply transform translate-y-[-4px];
-    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    @apply transform translate-y-[-2px];
+    box-shadow: 0 6px 12px -4px rgba(0, 0, 0, 0.1);
   }
 
   /* Secondary hover effects (green) */
@@ -150,8 +150,8 @@
   }
   
   .hover-secondary:hover:not(:disabled) {
-    @apply bg-secondary-hover transform scale-105;
-    box-shadow: 0 8px 20px -6px rgba(98, 178, 139, 0.4);
+    @apply bg-secondary-hover;
+    box-shadow: 0 4px 12px -4px rgba(98, 178, 139, 0.3);
   }
 
   /* Accent hover effects (orange) */
@@ -160,8 +160,8 @@
   }
   
   .hover-accent:hover:not(:disabled) {
-    @apply bg-accent-hover transform scale-105;
-    box-shadow: 0 8px 20px -6px rgba(239, 110, 0, 0.4);
+    @apply bg-accent-hover;
+    box-shadow: 0 4px 12px -4px rgba(239, 110, 0, 0.3);
   }
 
   /* Outline/Ghost button hover with border glow */
@@ -170,8 +170,7 @@
   }
   
   .hover-outline:hover:not(:disabled) {
-    @apply bg-muted/50 border-foreground/30 transform scale-[1.02];
-    box-shadow: 0 0 0 3px rgba(107, 121, 140, 0.1);
+    @apply bg-muted/30 border-foreground/20;
   }
 
   /* Destructive hover effects (red) */
@@ -180,8 +179,8 @@
   }
   
   .hover-destructive:hover:not(:disabled) {
-    @apply bg-destructive-hover transform scale-105;
-    box-shadow: 0 8px 20px -6px rgba(224, 33, 33, 0.4);
+    @apply bg-destructive-hover;
+    box-shadow: 0 4px 12px -4px rgba(224, 33, 33, 0.3);
   }
 
   /* Input focus enhancements */
@@ -217,7 +216,7 @@
   }
 
   .icon-btn-hover:hover:not(:disabled) {
-    @apply bg-muted transform rotate-[5deg] scale-110;
+    @apply bg-muted;
   }
 
   /* Badge hover effects */
@@ -226,7 +225,6 @@
   }
 
   .badge-hover:hover {
-    @apply brightness-110 transform scale-105;
-    filter: brightness(1.1) saturate(1.2);
+    @apply brightness-105;
   }
 }
