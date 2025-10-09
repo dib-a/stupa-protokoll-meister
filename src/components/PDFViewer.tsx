@@ -8,9 +8,10 @@ type PDFViewerProps = {
   file: File | null;
   isOpen: boolean;
   onClose: () => void;
+  modal?: boolean;
 };
 
-export const PDFViewer = ({ file, isOpen, onClose }: PDFViewerProps) => {
+export const PDFViewer = ({ file, isOpen, onClose, modal = true }: PDFViewerProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   if (!file) return null;
@@ -87,7 +88,7 @@ export const PDFViewer = ({ file, isOpen, onClose }: PDFViewerProps) => {
 
   // Small Dialog view
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose} modal={modal}>
       <DialogContent className="max-w-4xl h-[80vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">

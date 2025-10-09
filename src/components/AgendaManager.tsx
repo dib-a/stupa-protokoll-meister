@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, FileText, Vote, CheckCircle } from "lucide-react";
+import { Plus, Trash2, FileText, Vote, CheckCircle, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AgendaItem } from "@/pages/Index";
 import { DefaultTOPsManager } from "./DefaultTOPsManager";
+import { PDFViewer } from "./PDFViewer";
 
 type AgendaManagerProps = {
   agendaItems: AgendaItem[];
@@ -21,6 +22,7 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
   const [newItemTitle, setNewItemTitle] = useState("");
   const [editingVote, setEditingVote] = useState<string | null>(null);
   const [voteData, setVoteData] = useState({ ja: 0, nein: 0, enthaltungen: 0 });
+  const [viewingPdf, setViewingPdf] = useState<File | null>(null);
 
   const addAgendaItem = () => {
     if (newItemTitle.trim()) {
@@ -97,7 +99,15 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      <PDFViewer
+        file={viewingPdf}
+        isOpen={!!viewingPdf}
+        onClose={() => setViewingPdf(null)}
+        modal={false}
+      />
+      
+      <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -149,10 +159,16 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
                           )}
                         </div>
                         <h3 className="font-semibold text-lg mt-2">{item.title}</h3>
-                        {item.documentName && (
-                          <p className="text-sm text-muted-foreground">
-                            Dokument: {item.documentName}
-                          </p>
+                        {item.documentName && item.document && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setViewingPdf(item.document!)}
+                            className="mt-2 gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            {item.documentName} anzeigen
+                          </Button>
                         )}
                       </div>
                     <div className="flex space-x-2">
@@ -325,6 +341,7 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </>
   );
 };

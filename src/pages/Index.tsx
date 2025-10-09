@@ -28,6 +28,7 @@ export type AgendaItem = {
   notes: string;
   completed: boolean;
   documentName?: string; // PDF filename if this TOP is created from a document
+  document?: File; // PDF file object if this TOP is created from a document
 };
 
 export type MeetingData = {
@@ -78,7 +79,8 @@ const Index = () => {
       votingResult: null,
       notes: '',
       completed: false,
-      documentName: doc.name
+      documentName: doc.name,
+      document: doc
     }));
 
     updateMeetingData({ 
