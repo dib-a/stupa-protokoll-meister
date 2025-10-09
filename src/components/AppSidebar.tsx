@@ -1,17 +1,17 @@
-import { Calendar, FileText, Plus } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import {Calendar, Plus} from "lucide-react";
+import {NavLink} from "react-router-dom";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
 
 const items = [
   { title: "Sitzungen", url: "/", icon: Calendar },
@@ -31,8 +31,8 @@ export function AppSidebar() {
             <div className="flex items-center gap-2 mb-4">
               <img 
                 src="/src/assets/stupa-logo.png" 
-                alt="StuPa Logo" 
-                className="h-8 w-8"
+                alt="StuPa Logo"
+                className="h-8"
               />
               <h2 className="font-semibold text-lg">StuPa Protokoll</h2>
             </div>
