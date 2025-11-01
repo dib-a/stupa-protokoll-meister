@@ -4,7 +4,7 @@ import { useSitzungen } from "@/contexts/SitzungenContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Settings, Save, Keyboard } from "lucide-react";
+import { ArrowLeft, Calendar, Settings, Save, Keyboard, History } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttendanceManager } from "@/components/AttendanceManager";
 import { AgendaManager } from "@/components/AgendaManager";
@@ -17,6 +17,8 @@ import { SitzungStatus, AgendaItem, Participant, Role, MeetingTime } from "@/typ
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useVersionHistory } from "@/hooks/useVersionHistory";
+import { VersionHistoryDialog } from "@/components/VersionHistoryDialog";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -53,6 +55,22 @@ export default function SitzungDetail() {
   const [activeTab, setActiveTab] = useState("attendance");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const sitzung = id ? getSitzung(id) : undefined;
+
+  const {
+    snapshots,
+    createSnapshot,
+    deleteSnapshot,
+    getSnapshot,
+    lastAutoSave,
+  } = useVersionHistory(id || "", sitzung!);
+
+  const handleRestoreSnapshot = (snapshot: any) => {
+    if (!id) return;
+    updateSitzung(id, snapshot.data);
+  };
 
   // Keyboard shortcuts
   useKeyboardShortcuts([
@@ -87,9 +105,12 @@ export default function SitzungDetail() {
       key: "s",
       ctrlKey: true,
       handler: () => {
-        toast.success("Änderungen gespeichert");
+        if (sitzung) {
+          createSnapshot(`Manueller Save - ${format(new Date(), "HH:mm:ss")}`);
+          toast.success("Snapshot erstellt");
+        }
       },
-      description: "Änderungen speichern (Auto-Save ist aktiv)",
+      description: "Snapshot erstellen",
     },
     {
       key: "h",
@@ -103,9 +124,14 @@ export default function SitzungDetail() {
       handler: () => setShortcutsOpen(true),
       description: "Tastaturkürzel anzeigen",
     },
+    {
+      key: "v",
+      ctrlKey: true,
+      shiftKey: true,
+      handler: () => setHistoryOpen(true),
+      description: "Versionshistorie öffnen",
+    },
   ]);
-
-  const sitzung = id ? getSitzung(id) : undefined;
 
   useEffect(() => {
     if (!sitzung) {
@@ -192,6 +218,20 @@ export default function SitzungDetail() {
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setHistoryOpen(true)}
+                >
+                  <History className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Versionshistorie (Strg+Shift+V)</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Button variant="outline" size="icon" onClick={() => setShortcutsOpen(true)}>
                   <Keyboard className="h-4 w-4" />
                 </Button>
@@ -272,12 +312,16 @@ export default function SitzungDetail() {
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2">
+                  <div className="space-y-2">
                   <h3 className="font-semibold text-sm">Aktionen</h3>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Speichern</span>
+                      <span className="text-muted-foreground">Snapshot erstellen</span>
                       <kbd className="px-2 py-1 bg-muted rounded text-xs">Strg + S</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Versionshistorie</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Strg + Shift + V</kbd>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tastaturkürzel</span>
@@ -293,6 +337,16 @@ export default function SitzungDetail() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <VersionHistoryDialog
+          open={historyOpen}
+          onOpenChange={setHistoryOpen}
+          snapshots={snapshots}
+          onRestore={handleRestoreSnapshot}
+          onDelete={deleteSnapshot}
+          onCreateSnapshot={(label) => createSnapshot(label)}
+          lastAutoSave={lastAutoSave}
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">

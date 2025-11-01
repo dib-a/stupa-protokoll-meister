@@ -400,6 +400,38 @@ Ergebnis: ${result}\n`;
     setIsExporting(false);
   };
 
+  const exportMarkdown = async () => {
+    setIsExporting(true);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const markdownContent = generateProtocolText()
+      .replace(/═+/g, (match) => '-'.repeat(match.length))
+      .split('\n')
+      .map(line => {
+        if (line.startsWith('TOP ')) {
+          return `## ${line}`;
+        }
+        if (line.match(/^[A-ZÄÖÜ\s]+:$/)) {
+          return `### ${line}`;
+        }
+        return line;
+      })
+      .join('\n');
+    
+    const blob = new Blob([markdownContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Stupa-Protokoll_${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    setIsExporting(false);
+  };
+
   const exportMeetingDataJSON = async () => {
     setIsExporting(true);
     
@@ -507,6 +539,16 @@ Ergebnis: ${result}\n`;
             >
               <FileDown className="h-4 w-4 mr-2" />
               {isExporting ? "Wird erstellt..." : "Protokoll als PDF exportieren"}
+            </Button>
+            <Button 
+              onClick={exportMarkdown}
+              disabled={!isReadyForExport || isExporting}
+              variant="secondary"
+              className="w-full"
+              size="lg"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              {isExporting ? "Wird erstellt..." : "Als Markdown exportieren"}
             </Button>
             <Button 
               onClick={exportMeetingDataJSON}
