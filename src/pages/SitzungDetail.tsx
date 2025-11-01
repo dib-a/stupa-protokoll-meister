@@ -4,7 +4,7 @@ import { useSitzungen } from "@/contexts/SitzungenContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Settings } from "lucide-react";
+import { ArrowLeft, Calendar, Settings, Save, Keyboard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttendanceManager } from "@/components/AttendanceManager";
 import { AgendaManager } from "@/components/AgendaManager";
@@ -16,6 +16,14 @@ import { de } from "date-fns/locale";
 import { SitzungStatus, AgendaItem, Participant, Role, MeetingTime } from "@/types/sitzung";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -44,6 +52,58 @@ export default function SitzungDetail() {
   const { getSitzung, updateSitzung } = useSitzungen();
   const [activeTab, setActiveTab] = useState("attendance");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: "1",
+      altKey: true,
+      handler: () => {
+        setActiveTab("attendance");
+        toast.success("Zu Anwesenheit gewechselt");
+      },
+      description: "Zur Anwesenheit wechseln",
+    },
+    {
+      key: "2",
+      altKey: true,
+      handler: () => {
+        setActiveTab("agenda");
+        toast.success("Zur Tagesordnung gewechselt");
+      },
+      description: "Zur Tagesordnung wechseln",
+    },
+    {
+      key: "3",
+      altKey: true,
+      handler: () => {
+        setActiveTab("protocol");
+        toast.success("Zum Protokoll gewechselt");
+      },
+      description: "Zum Protokoll wechseln",
+    },
+    {
+      key: "s",
+      ctrlKey: true,
+      handler: () => {
+        toast.success("Änderungen gespeichert");
+      },
+      description: "Änderungen speichern (Auto-Save ist aktiv)",
+    },
+    {
+      key: "h",
+      ctrlKey: true,
+      handler: () => navigate("/"),
+      description: "Zurück zur Übersicht",
+    },
+    {
+      key: "/",
+      ctrlKey: true,
+      handler: () => setShortcutsOpen(true),
+      description: "Tastaturkürzel anzeigen",
+    },
+  ]);
 
   const sitzung = id ? getSitzung(id) : undefined;
 
@@ -109,26 +169,38 @@ export default function SitzungDetail() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => navigate("/")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">{sitzung.title}</h1>
-              <Badge variant={statusConfig[sitzung.status].variant}>
-                {statusConfig[sitzung.status].label}
-              </Badge>
+    <TooltipProvider>
+      <div className="container mx-auto p-6 max-w-7xl">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" onClick={() => navigate("/")}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold">{sitzung.title}</h1>
+                <Badge variant={statusConfig[sitzung.status].variant}>
+                  {statusConfig[sitzung.status].label}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground flex items-center gap-2 mt-1">
+                <Calendar className="h-4 w-4" />
+                {format(new Date(sitzung.date), "PPPP", { locale: de })}
+              </p>
             </div>
-            <p className="text-muted-foreground flex items-center gap-2 mt-1">
-              <Calendar className="h-4 w-4" />
-              {format(new Date(sitzung.date), "PPPP", { locale: de })}
-            </p>
           </div>
-        </div>
-        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon" onClick={() => setShortcutsOpen(true)}>
+                  <Keyboard className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Tastaturkürzel (Strg+/)</p>
+              </TooltipContent>
+            </Tooltip>
+            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="icon">
               <Settings className="h-4 w-4" />
@@ -165,10 +237,64 @@ export default function SitzungDetail() {
               </div>
             </div>
           </DialogContent>
-        </Dialog>
-      </div>
+          </Dialog>
+          </div>
+        </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Tastaturkürzel</DialogTitle>
+              <DialogDescription>
+                Verwenden Sie diese Tastenkombinationen für schnellere Navigation
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm">Navigation</h3>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Anwesenheit</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Alt + 1</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tagesordnung</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Alt + 2</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Protokoll</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Alt + 3</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Zur Übersicht</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Strg + H</kbd>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm">Aktionen</h3>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Speichern</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Strg + S</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tastaturkürzel</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Strg + /</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Erstellen (Eingabe)</span>
+                      <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
           <TabsTrigger value="attendance">Anwesenheit</TabsTrigger>
           <TabsTrigger value="agenda">Tagesordnung</TabsTrigger>
@@ -215,7 +341,8 @@ export default function SitzungDetail() {
             onNextMeetingDateChange={handleUpdateNextMeeting}
           />
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </TooltipProvider>
   );
 }
