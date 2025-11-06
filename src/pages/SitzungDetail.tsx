@@ -11,9 +11,11 @@ import { AgendaManager } from "@/components/AgendaManager";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MeetingTimeTracker } from "@/components/MeetingTimeTracker";
 import { ProtocolPreview } from "@/components/ProtocolPreview";
+import { EmailSettings } from "@/components/EmailSettings";
+import { EmailInvitations } from "@/components/EmailInvitations";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { SitzungStatus, AgendaItem, Participant, Role, MeetingTime } from "@/types/sitzung";
+import { SitzungStatus, AgendaItem, Participant, Role, MeetingTime, EmailSettings as EmailSettingsType } from "@/types/sitzung";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -194,6 +196,11 @@ export default function SitzungDetail() {
     updateSitzung(sitzung.id, { status });
   };
 
+  const handleUpdateEmailSettings = (emailSettings: EmailSettingsType) => {
+    updateSitzung(sitzung.id, { emailSettings });
+    toast.success("E-Mail-Einstellungen gespeichert");
+  };
+
   return (
     <TooltipProvider>
       <div className="container mx-auto p-6 max-w-7xl">
@@ -246,36 +253,48 @@ export default function SitzungDetail() {
               <Settings className="h-4 w-4" />
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Sitzungseinstellungen</DialogTitle>
               <DialogDescription>
                 Bearbeiten Sie die grundlegenden Einstellungen dieser Sitzung
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-title">Titel</Label>
-                <Input
-                  id="edit-title"
-                  value={sitzung.title}
-                  onChange={(e) => handleUpdateTitle(e.target.value)}
+            <Tabs defaultValue="general" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="general">Allgemein</TabsTrigger>
+                <TabsTrigger value="email">E-Mail</TabsTrigger>
+              </TabsList>
+              <TabsContent value="general" className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">Titel</Label>
+                  <Input
+                    id="edit-title"
+                    value={sitzung.title}
+                    onChange={(e) => handleUpdateTitle(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={sitzung.status} onValueChange={handleUpdateStatus}>
+                    <SelectTrigger id="status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planned">Geplant</SelectItem>
+                      <SelectItem value="ongoing">Laufend</SelectItem>
+                      <SelectItem value="completed">Abgeschlossen</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </TabsContent>
+              <TabsContent value="email" className="py-4">
+                <EmailSettings
+                  settings={sitzung.emailSettings}
+                  onSave={handleUpdateEmailSettings}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={sitzung.status} onValueChange={handleUpdateStatus}>
-                  <SelectTrigger id="status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planned">Geplant</SelectItem>
-                    <SelectItem value="ongoing">Laufend</SelectItem>
-                    <SelectItem value="completed">Abgeschlossen</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
           </Dialog>
           </div>
@@ -356,6 +375,24 @@ export default function SitzungDetail() {
         </TabsList>
 
         <TabsContent value="attendance" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Einladungen versenden</CardTitle>
+              <CardDescription>
+                Versenden Sie E-Mail-Einladungen an alle Teilnehmer
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EmailInvitations
+                participants={sitzung.participants}
+                meetingTitle={sitzung.title}
+                meetingDate={sitzung.date}
+                senderEmail={sitzung.emailSettings?.senderEmail}
+                senderName={sitzung.emailSettings?.senderName}
+                onEmailSettingsClick={() => setSettingsOpen(true)}
+              />
+            </CardContent>
+          </Card>
           <AttendanceManager
             participants={sitzung.participants}
             onUpdate={handleUpdateParticipants}
