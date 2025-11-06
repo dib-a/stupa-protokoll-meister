@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSitzungen } from "@/contexts/SitzungenContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,7 @@ import { EmailSettings } from "@/components/EmailSettings";
 import { EmailInvitations } from "@/components/EmailInvitations";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { SitzungStatus, AgendaItem, Participant, Role, MeetingTime, EmailSettings as EmailSettingsType } from "@/types/sitzung";
+import { SitzungStatus, AgendaItem, Participant, Role, MeetingTime } from "@/types/sitzung";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -54,6 +55,7 @@ export default function SitzungDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getSitzung, updateSitzung } = useSitzungen();
+  const { emailSettings, updateEmailSettings } = useSettings();
   const [activeTab, setActiveTab] = useState("attendance");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -196,11 +198,6 @@ export default function SitzungDetail() {
     updateSitzung(sitzung.id, { status });
   };
 
-  const handleUpdateEmailSettings = (emailSettings: EmailSettingsType) => {
-    updateSitzung(sitzung.id, { emailSettings });
-    toast.success("E-Mail-Einstellungen gespeichert");
-  };
-
   return (
     <TooltipProvider>
       <div className="container mx-auto p-6 max-w-7xl">
@@ -255,15 +252,15 @@ export default function SitzungDetail() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Sitzungseinstellungen</DialogTitle>
+              <DialogTitle>Einstellungen</DialogTitle>
               <DialogDescription>
-                Bearbeiten Sie die grundlegenden Einstellungen dieser Sitzung
+                Verwalten Sie Sitzungs- und globale E-Mail-Einstellungen
               </DialogDescription>
             </DialogHeader>
             <Tabs defaultValue="general" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="general">Allgemein</TabsTrigger>
-                <TabsTrigger value="email">E-Mail</TabsTrigger>
+                <TabsTrigger value="email">E-Mail (Global)</TabsTrigger>
               </TabsList>
               <TabsContent value="general" className="space-y-4 py-4">
                 <div className="space-y-2">
@@ -289,9 +286,14 @@ export default function SitzungDetail() {
                 </div>
               </TabsContent>
               <TabsContent value="email" className="py-4">
+                <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    Diese Einstellungen gelten für die gesamte Anwendung und alle Sitzungen.
+                  </p>
+                </div>
                 <EmailSettings
-                  settings={sitzung.emailSettings}
-                  onSave={handleUpdateEmailSettings}
+                  settings={emailSettings}
+                  onSave={updateEmailSettings}
                 />
               </TabsContent>
             </Tabs>
@@ -379,7 +381,7 @@ export default function SitzungDetail() {
             <CardHeader>
               <CardTitle>Einladungen versenden</CardTitle>
               <CardDescription>
-                Versenden Sie E-Mail-Einladungen an alle Teilnehmer
+                E-Mail-Einladung an die zentrale Sammeladresse senden
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -387,8 +389,9 @@ export default function SitzungDetail() {
                 participants={sitzung.participants}
                 meetingTitle={sitzung.title}
                 meetingDate={sitzung.date}
-                senderEmail={sitzung.emailSettings?.senderEmail}
-                senderName={sitzung.emailSettings?.senderName}
+                senderEmail={emailSettings?.senderEmail}
+                senderName={emailSettings?.senderName}
+                collectorEmail={emailSettings?.collectorEmail}
                 onEmailSettingsClick={() => setSettingsOpen(true)}
               />
             </CardContent>

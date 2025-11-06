@@ -37,12 +37,6 @@ export interface Role {
   isDefault: boolean;
 }
 
-export interface EmailSettings {
-  senderEmail: string;
-  senderName: string;
-  replyTo?: string;
-}
-
 export interface Sitzung {
   id: string;
   title: string;
@@ -54,7 +48,6 @@ export interface Sitzung {
   nextMeetingDate: string;
   documents: File[];
   roles: Role[];
-  emailSettings?: EmailSettings;
   createdAt: string;
   updatedAt: string;
 }

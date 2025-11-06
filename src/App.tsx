@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SitzungenProvider } from "./contexts/SitzungenContext";
+import { SettingsProvider } from "./contexts/SettingsContext";
 import { Layout } from "./components/Layout";
 import SitzungenList from "./pages/SitzungenList";
 import NewSitzung from "./pages/NewSitzung";
@@ -18,16 +19,18 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <SitzungenProvider>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<SitzungenList />} />
-              <Route path="/new" element={<NewSitzung />} />
-              <Route path="/sitzung/:id" element={<SitzungDetail />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
-        </SitzungenProvider>
+        <SettingsProvider>
+          <SitzungenProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<SitzungenList />} />
+                <Route path="/new" element={<NewSitzung />} />
+                <Route path="/sitzung/:id" element={<SitzungDetail />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </SitzungenProvider>
+        </SettingsProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
