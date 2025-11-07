@@ -1,4 +1,4 @@
-export type SitzungStatus = "planned" | "ongoing" | "completed";
+export type SitzungStatus = "planned" | "invited" | "ongoing" | "completed";
 
 export interface Participant {
   id: string;

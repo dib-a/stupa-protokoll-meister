@@ -16,43 +16,25 @@ const validateOstfaliaEmail = (email: string): boolean => {
 };
 
 export function EmailSettings({ settings, onSave }: EmailSettingsProps) {
-  const [senderEmail, setSenderEmail] = useState(settings?.senderEmail || "");
   const [senderName, setSenderName] = useState(settings?.senderName || "");
   const [collectorEmail, setCollectorEmail] = useState(settings?.collectorEmail || "");
 
   const handleSave = () => {
-    if (!validateOstfaliaEmail(senderEmail)) {
-      toast.error("Absender E-Mail muss mit @ostfalia.de enden");
-      return;
-    }
     if (!validateOstfaliaEmail(collectorEmail)) {
       toast.error("Sammler E-Mail muss mit @ostfalia.de enden");
       return;
     }
     
     onSave({
-      senderEmail,
       senderName,
       collectorEmail,
     });
   };
 
-  const isValid = senderEmail && senderName && collectorEmail;
+  const isValid = senderName && collectorEmail;
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="senderEmail">Absender E-Mail *</Label>
-        <Input
-          id="senderEmail"
-          type="email"
-          placeholder="vorname.nachname@ostfalia.de"
-          value={senderEmail}
-          onChange={(e) => setSenderEmail(e.target.value)}
-        />
-        <p className="text-xs text-muted-foreground">Muss mit @ostfalia.de enden</p>
-      </div>
-
       <div className="space-y-2">
         <Label htmlFor="senderName">Absender Name *</Label>
         <Input
@@ -74,7 +56,7 @@ export function EmailSettings({ settings, onSave }: EmailSettingsProps) {
           onChange={(e) => setCollectorEmail(e.target.value)}
         />
         <p className="text-xs text-muted-foreground">
-          Alle Einladungen werden an diese Adresse gesendet (z.B. Universitäts-Verteiler)
+          Muss mit @ostfalia.de enden. Alle Einladungen werden an diese Adresse gesendet.
         </p>
       </div>
 

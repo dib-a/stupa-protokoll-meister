@@ -47,6 +47,7 @@ import {
 
 const statusConfig: Record<SitzungStatus, { label: string; variant: "default" | "secondary" | "outline" }> = {
   planned: { label: "Geplant", variant: "outline" },
+  invited: { label: "Eingeladen", variant: "secondary" },
   ongoing: { label: "Laufend", variant: "secondary" },
   completed: { label: "Abgeschlossen", variant: "default" },
 };
@@ -389,7 +390,6 @@ export default function SitzungDetail() {
                 participants={sitzung.participants}
                 meetingTitle={sitzung.title}
                 meetingDate={sitzung.date}
-                senderEmail={emailSettings?.senderEmail}
                 senderName={emailSettings?.senderName}
                 collectorEmail={emailSettings?.collectorEmail}
                 onEmailSettingsClick={() => setSettingsOpen(true)}

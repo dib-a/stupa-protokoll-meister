@@ -21,6 +21,7 @@ import { SitzungStatus } from "@/types/sitzung";
 
 const statusConfig: Record<SitzungStatus, { label: string; variant: "default" | "secondary" | "outline" }> = {
   planned: { label: "Geplant", variant: "outline" },
+  invited: { label: "Eingeladen", variant: "secondary" },
   ongoing: { label: "Laufend", variant: "secondary" },
   completed: { label: "Abgeschlossen", variant: "default" },
 };

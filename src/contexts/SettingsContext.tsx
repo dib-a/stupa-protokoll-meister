@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface GlobalEmailSettings {
-  senderEmail: string;
   senderName: string;
   collectorEmail: string;
 }

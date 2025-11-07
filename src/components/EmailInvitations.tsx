@@ -9,7 +9,6 @@ interface EmailInvitationsProps {
   participants: Participant[];
   meetingTitle: string;
   meetingDate: string;
-  senderEmail?: string;
   senderName?: string;
   collectorEmail?: string;
   onEmailSettingsClick: () => void;
@@ -19,37 +18,40 @@ export function EmailInvitations({
   participants,
   meetingTitle,
   meetingDate,
-  senderEmail,
   senderName,
   collectorEmail,
   onEmailSettingsClick,
 }: EmailInvitationsProps) {
   const sendInvitation = () => {
-    if (!senderEmail || !collectorEmail) {
+    if (!collectorEmail) {
       toast.error("Bitte konfigurieren Sie zuerst die E-Mail-Einstellungen");
       onEmailSettingsClick();
       return;
     }
 
-    const formattedDate = format(new Date(meetingDate), "dd. MMMM yyyy", { locale: de });
-    const subject = encodeURIComponent(`Einladung zur Sitzung: ${meetingTitle}`);
-    const participantsList = participants.map(p => `- ${p.name} (${p.role})`).join('\n');
-    const body = encodeURIComponent(
-      `Sehr geehrte Damen und Herren,\n\n` +
-      `hiermit laden wir zur folgenden Sitzung ein:\n\n` +
-      `Titel: ${meetingTitle}\n` +
-      `Datum: ${formattedDate}\n\n` +
-      `Teilnehmer:\n${participantsList}\n\n` +
-      `Wir freuen uns auf Ihre Teilnahme.\n\n` +
-      `Mit freundlichen Grüßen,\n${senderName}\n${senderEmail}`
-    );
+    const formattedDate = format(new Date(meetingDate), "EEEE, dd. MMMM yyyy", { locale: de });
+    const formattedTime = format(new Date(meetingDate), "HH:mm", { locale: de });
+    const subject = encodeURIComponent(`Einladung: ${meetingTitle}`);
+    const participantsList = participants.map(p => `${p.name} - ${p.role}`).join('%0D%0A');
+    
+    const body = 
+      `Sehr geehrte Damen und Herren,%0D%0A%0D%0A` +
+      `Sie sind herzlich zur folgenden Sitzung eingeladen:%0D%0A%0D%0A` +
+      `──────────────────────────────────────────%0D%0A` +
+      `SITZUNG: ${meetingTitle}%0D%0A` +
+      `DATUM: ${formattedDate}%0D%0A` +
+      `UHRZEIT: ${formattedTime} Uhr%0D%0A` +
+      `──────────────────────────────────────────%0D%0A%0D%0A` +
+      `TEILNEHMER:%0D%0A${participantsList}%0D%0A%0D%0A` +
+      `Wir freuen uns auf Ihre Teilnahme.%0D%0A%0D%0A` +
+      `Mit freundlichen Grüßen,%0D%0A${senderName}`;
 
     const mailto = `mailto:${collectorEmail}?subject=${subject}&body=${body}`;
     window.location.href = mailto;
     toast.success(`E-Mail-Client wird geöffnet für ${collectorEmail}`);
   };
 
-  if (!senderEmail || !collectorEmail) {
+  if (!collectorEmail) {
     return (
       <div className="text-center space-y-4 p-6 bg-muted/50 rounded-lg">
         <Mail className="w-12 h-12 mx-auto text-muted-foreground" />
