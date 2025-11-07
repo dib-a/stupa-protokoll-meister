@@ -217,6 +217,7 @@ export default function SitzungDetail() {
               <p className="text-muted-foreground flex items-center gap-2 mt-1">
                 <Calendar className="h-4 w-4" />
                 {format(new Date(sitzung.date), "PPPP", { locale: de })}
+                {sitzung.time && ` • ${sitzung.time} Uhr`}
               </p>
             </div>
           </div>
@@ -251,53 +252,37 @@ export default function SitzungDetail() {
               <Settings className="h-4 w-4" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle>Einstellungen</DialogTitle>
+              <DialogTitle>Sitzungseinstellungen</DialogTitle>
               <DialogDescription>
-                Verwalten Sie Sitzungs- und globale E-Mail-Einstellungen
+                Titel und Status der Sitzung bearbeiten
               </DialogDescription>
             </DialogHeader>
-            <Tabs defaultValue="general" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="general">Allgemein</TabsTrigger>
-                <TabsTrigger value="email">E-Mail (Global)</TabsTrigger>
-              </TabsList>
-              <TabsContent value="general" className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-title">Titel</Label>
-                  <Input
-                    id="edit-title"
-                    value={sitzung.title}
-                    onChange={(e) => handleUpdateTitle(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={sitzung.status} onValueChange={handleUpdateStatus}>
-                    <SelectTrigger id="status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="planned">Geplant</SelectItem>
-                      <SelectItem value="ongoing">Laufend</SelectItem>
-                      <SelectItem value="completed">Abgeschlossen</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </TabsContent>
-              <TabsContent value="email" className="py-4">
-                <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Diese Einstellungen gelten für die gesamte Anwendung und alle Sitzungen.
-                  </p>
-                </div>
-                <EmailSettings
-                  settings={emailSettings}
-                  onSave={updateEmailSettings}
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Titel</Label>
+                <Input
+                  id="edit-title"
+                  value={sitzung.title}
+                  onChange={(e) => handleUpdateTitle(e.target.value)}
                 />
-              </TabsContent>
-            </Tabs>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={sitzung.status} onValueChange={handleUpdateStatus}>
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planned">Geplant</SelectItem>
+                    <SelectItem value="invited">Eingeladen</SelectItem>
+                    <SelectItem value="ongoing">Laufend</SelectItem>
+                    <SelectItem value="completed">Abgeschlossen</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </DialogContent>
           </Dialog>
           </div>
@@ -433,6 +418,7 @@ export default function SitzungDetail() {
               roles: sitzung.roles,
             }}
             onNextMeetingDateChange={handleUpdateNextMeeting}
+            meetingStatus={sitzung.status}
           />
         </TabsContent>
         </Tabs>

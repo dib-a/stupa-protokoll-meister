@@ -20,10 +20,11 @@ export default function NewSitzung() {
   const { addSitzung } = useSitzungen();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
+  const [time, setTime] = useState("14:00");
   const [selectedTemplate, setSelectedTemplate] = useState("standard-weekly");
 
   const handleCreate = () => {
-    if (!title || !date) return;
+    if (!title || !date || !time) return;
 
     const template = getTemplateById(selectedTemplate);
     const agendaItems: AgendaItem[] = template?.agendaItems.map((item, index) => ({
@@ -34,6 +35,7 @@ export default function NewSitzung() {
     const id = addSitzung({
       title,
       date: date.toISOString(),
+      time,
       status: "planned",
       participants: [],
       agendaItems,
@@ -107,6 +109,16 @@ export default function NewSitzung() {
               </Popover>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="time">Uhrzeit</Label>
+              <Input
+                id="time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+              />
+            </div>
+
             <div className="flex gap-2 pt-4">
               <Button
                 variant="outline"
@@ -118,7 +130,7 @@ export default function NewSitzung() {
               <Button
                 className="flex-1"
                 onClick={handleCreate}
-                disabled={!title || !date}
+                disabled={!title || !date || !time}
               >
                 Erstellen
               </Button>

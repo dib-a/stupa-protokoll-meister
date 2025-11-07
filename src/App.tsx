@@ -9,6 +9,7 @@ import { Layout } from "./components/Layout";
 import SitzungenList from "./pages/SitzungenList";
 import NewSitzung from "./pages/NewSitzung";
 import SitzungDetail from "./pages/SitzungDetail";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
                 <Route path="/" element={<SitzungenList />} />
                 <Route path="/new" element={<NewSitzung />} />
                 <Route path="/sitzung/:id" element={<SitzungDetail />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>

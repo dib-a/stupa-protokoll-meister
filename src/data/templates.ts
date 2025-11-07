@@ -5,6 +5,10 @@ export const SITZUNG_TEMPLATES: SitzungTemplate[] = [
     id: "standard-weekly",
     name: "Standard Wochensitzung",
     description: "Reguläre wöchentliche StuPa-Sitzung mit Standardtagesordnung",
+    roles: [
+      { id: "mitglied", name: "Mitglied", color: "primary", canVote: true, isDefault: true },
+      { id: "gast", name: "Gast", color: "secondary", canVote: false, isDefault: false },
+    ],
     agendaItems: [
       {
         title: "Eröffnung und Begrüßung",
@@ -66,6 +70,10 @@ export const SITZUNG_TEMPLATES: SitzungTemplate[] = [
     id: "finance-session",
     name: "Finanzsitzung",
     description: "Sitzung mit Fokus auf Haushalts- und Finanzfragen",
+    roles: [
+      { id: "mitglied", name: "Mitglied", color: "primary", canVote: true, isDefault: true },
+      { id: "gast", name: "Gast", color: "secondary", canVote: false, isDefault: false },
+    ],
     agendaItems: [
       {
         title: "Eröffnung und Begrüßung",
@@ -133,6 +141,10 @@ export const SITZUNG_TEMPLATES: SitzungTemplate[] = [
     id: "special-election",
     name: "Wahlsitzung",
     description: "Sitzung für Wahlen und Besetzungen",
+    roles: [
+      { id: "mitglied", name: "Mitglied", color: "primary", canVote: true, isDefault: true },
+      { id: "gast", name: "Gast", color: "secondary", canVote: false, isDefault: false },
+    ],
     agendaItems: [
       {
         title: "Eröffnung und Begrüßung",
@@ -188,6 +200,10 @@ export const SITZUNG_TEMPLATES: SitzungTemplate[] = [
     id: "blank",
     name: "Leere Sitzung",
     description: "Beginnen Sie mit einer leeren Tagesordnung",
+    roles: [
+      { id: "mitglied", name: "Mitglied", color: "primary", canVote: true, isDefault: true },
+      { id: "gast", name: "Gast", color: "secondary", canVote: false, isDefault: false },
+    ],
     agendaItems: [],
   },
 ];

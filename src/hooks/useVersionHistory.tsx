@@ -40,6 +40,7 @@ export const useVersionHistory = (sitzungId: string, currentData: Sitzung) => {
         data: {
           title: currentData.title,
           date: currentData.date,
+          time: currentData.time,
           status: currentData.status,
           participants: currentData.participants,
           agendaItems: currentData.agendaItems,

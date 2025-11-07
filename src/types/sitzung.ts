@@ -41,6 +41,7 @@ export interface Sitzung {
   id: string;
   title: string;
   date: string;
+  time: string;
   status: SitzungStatus;
   participants: Participant[];
   agendaItems: AgendaItem[];

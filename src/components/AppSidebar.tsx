@@ -1,4 +1,4 @@
-import {Calendar, Plus} from "lucide-react";
+import {Calendar, Plus, Settings} from "lucide-react";
 import {NavLink} from "react-router-dom";
 import {
     Sidebar,
@@ -15,6 +15,7 @@ import {Button} from "@/components/ui/button";
 
 const items = [
   { title: "Sitzungen", url: "/", icon: Calendar },
+  { title: "Einstellungen", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

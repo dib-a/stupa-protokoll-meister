@@ -14,9 +14,10 @@ type ProtocolPreviewProps = {
   meetingData: MeetingData;
   onNextMeetingDateChange: (date: string) => void;
   onEndMeeting?: () => void;
+  meetingStatus?: string;
 };
 
-export const ProtocolPreview = ({ meetingData, onNextMeetingDateChange, onEndMeeting }: ProtocolPreviewProps) => {
+export const ProtocolPreview = ({ meetingData, onNextMeetingDateChange, onEndMeeting, meetingStatus = "planned" }: ProtocolPreviewProps) => {
   const [isExporting, setIsExporting] = useState(false);
   const [viewingDocument, setViewingDocument] = useState<File | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -462,6 +463,7 @@ Ergebnis: ${result}\n`;
 
   const stats = getCompletionStats();
   const isReadyForExport = stats.hasAttendance && stats.totalItems > 0;
+  const isMeetingCompleted = meetingStatus === "completed";
 
   const canEndMeeting = meetingData.meetingTimes.opening && !meetingData.meetingTimes.closing;
 
@@ -531,9 +533,14 @@ Ergebnis: ${result}\n`;
           </div>
 
           <div className="flex flex-col gap-3">
+            {!isMeetingCompleted && (
+              <div className="p-3 bg-warning/10 border border-warning rounded-lg text-sm text-warning mb-2">
+                ⚠️ Die Sitzung muss abgeschlossen sein, um Protokolle zu exportieren. Setzen Sie den Status auf "Abgeschlossen".
+              </div>
+            )}
             <Button 
               onClick={exportProtocolPDF}
-              disabled={!isReadyForExport || isExporting}
+              disabled={!isReadyForExport || isExporting || !isMeetingCompleted}
               className="w-full"
               size="lg"
             >
@@ -542,7 +549,7 @@ Ergebnis: ${result}\n`;
             </Button>
             <Button 
               onClick={exportMarkdown}
-              disabled={!isReadyForExport || isExporting}
+              disabled={!isReadyForExport || isExporting || !isMeetingCompleted}
               variant="secondary"
               className="w-full"
               size="lg"
