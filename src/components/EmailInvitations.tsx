@@ -9,46 +9,57 @@ interface EmailInvitationsProps {
   participants: Participant[];
   meetingTitle: string;
   meetingDate: string;
+  meetingTime: string;
   senderName?: string;
   collectorEmail?: string;
   onEmailSettingsClick: () => void;
+  onInvitationSent: () => void;
 }
 
 export function EmailInvitations({
   participants,
   meetingTitle,
   meetingDate,
+  meetingTime,
   senderName,
   collectorEmail,
   onEmailSettingsClick,
+  onInvitationSent,
 }: EmailInvitationsProps) {
   const sendInvitation = () => {
-    if (!collectorEmail) {
-      toast.error("Bitte konfigurieren Sie zuerst die E-Mail-Einstellungen");
+    if (!collectorEmail || !senderName) {
+      toast.error("E-Mail-Einstellungen nicht konfiguriert");
       onEmailSettingsClick();
       return;
     }
 
-    const formattedDate = format(new Date(meetingDate), "EEEE, dd. MMMM yyyy", { locale: de });
-    const formattedTime = format(new Date(meetingDate), "HH:mm", { locale: de });
-    const subject = encodeURIComponent(`Einladung: ${meetingTitle}`);
-    const participantsList = participants.map(p => `${p.name} - ${p.role}`).join('%0D%0A');
+    const formattedDate = format(new Date(meetingDate), "PPPP", { locale: de });
     
-    const body = 
-      `Sehr geehrte Damen und Herren,%0D%0A%0D%0A` +
-      `Sie sind herzlich zur folgenden Sitzung eingeladen:%0D%0A%0D%0A` +
-      `──────────────────────────────────────────%0D%0A` +
-      `SITZUNG: ${meetingTitle}%0D%0A` +
-      `DATUM: ${formattedDate}%0D%0A` +
-      `UHRZEIT: ${formattedTime} Uhr%0D%0A` +
-      `──────────────────────────────────────────%0D%0A%0D%0A` +
-      `TEILNEHMER:%0D%0A${participantsList}%0D%0A%0D%0A` +
-      `Wir freuen uns auf Ihre Teilnahme.%0D%0A%0D%0A` +
-      `Mit freundlichen Grüßen,%0D%0A${senderName}`;
+    const subject = encodeURIComponent(`Einladung: ${meetingTitle}`);
+    
+    const participantsList = participants
+      .map(p => `${p.name} (${p.role})`)
+      .join("%0D%0A  - ");
+    
+    const body = encodeURIComponent(
+      `Sehr geehrte Damen und Herren,
 
-    const mailto = `mailto:${collectorEmail}?subject=${subject}&body=${body}`;
-    window.location.href = mailto;
-    toast.success(`E-Mail-Client wird geöffnet für ${collectorEmail}`);
+hiermit lade ich Sie zur folgenden Sitzung ein:
+
+Titel: ${meetingTitle}
+Datum: ${formattedDate}
+Uhrzeit: ${meetingTime} Uhr
+
+Teilnehmer:
+  - ${participantsList}
+
+Mit freundlichen Grüßen
+${senderName}`
+    );
+
+    window.location.href = `mailto:${collectorEmail}?subject=${subject}&body=${body}`;
+    onInvitationSent();
+    toast.success("E-Mail-Einladung wird geöffnet und Status auf 'Eingeladen' gesetzt");
   };
 
   if (!collectorEmail) {

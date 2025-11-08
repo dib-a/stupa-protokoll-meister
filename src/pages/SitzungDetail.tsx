@@ -355,6 +355,20 @@ export default function SitzungDetail() {
           lastAutoSave={lastAutoSave}
         />
 
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Sitzungszeit</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MeetingTimeTracker
+              meetingTimes={sitzung.meetingTimes}
+              onUpdate={handleUpdateMeetingTimes}
+              onMeetingStart={() => handleUpdateStatus("ongoing")}
+              onMeetingEnd={() => handleUpdateStatus("completed")}
+            />
+          </CardContent>
+        </Card>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
           <TabsTrigger value="attendance">Anwesenheit</TabsTrigger>
@@ -375,9 +389,11 @@ export default function SitzungDetail() {
                 participants={sitzung.participants}
                 meetingTitle={sitzung.title}
                 meetingDate={sitzung.date}
+                meetingTime={sitzung.time}
                 senderName={emailSettings?.senderName}
                 collectorEmail={emailSettings?.collectorEmail}
                 onEmailSettingsClick={() => setSettingsOpen(true)}
+                onInvitationSent={() => handleUpdateStatus("invited")}
               />
             </CardContent>
           </Card>
@@ -387,10 +403,6 @@ export default function SitzungDetail() {
             quorumStatus={getQuorumStatus()}
             roles={sitzung.roles}
             onRolesUpdate={handleUpdateRoles}
-          />
-          <MeetingTimeTracker
-            meetingTimes={sitzung.meetingTimes}
-            onUpdate={handleUpdateMeetingTimes}
           />
         </TabsContent>
 

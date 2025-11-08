@@ -11,26 +11,47 @@ import { Calendar as CalendarIcon, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { SITZUNG_TEMPLATES, getTemplateById } from "@/data/templates";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AgendaItem } from "@/types/sitzung";
+import { useTemplates } from "@/contexts/TemplatesContext";
 
 export default function NewSitzung() {
   const navigate = useNavigate();
   const { addSitzung } = useSitzungen();
+  const { templates, getTemplate } = useTemplates();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("14:00");
-  const [selectedTemplate, setSelectedTemplate] = useState("standard-weekly");
+  const [selectedTemplate, setSelectedTemplate] = useState("empty");
 
   const handleCreate = () => {
     if (!title || !date || !time) return;
 
-    const template = getTemplateById(selectedTemplate);
-    const agendaItems: AgendaItem[] = template?.agendaItems.map((item, index) => ({
-      ...item,
+    const template = getTemplate(selectedTemplate);
+    const agendaItems: AgendaItem[] = template?.agendaItems.map((item) => ({
       id: crypto.randomUUID(),
+      title: item.title,
+      votingResult: null,
+      notes: "",
+      completed: false,
     })) || [];
+
+    const defaultRoles = [
+      {
+        id: "1",
+        name: "Mitglied",
+        color: "primary" as const,
+        canVote: true,
+        isDefault: true,
+      },
+      {
+        id: "2",
+        name: "Gast",
+        color: "secondary" as const,
+        canVote: false,
+        isDefault: true,
+      },
+    ];
 
     const id = addSitzung({
       title,
@@ -42,7 +63,7 @@ export default function NewSitzung() {
       meetingTimes: { pauses: [] },
       nextMeetingDate: "",
       documents: [],
-      roles: template?.roles || [],
+      roles: defaultRoles,
     });
 
     navigate(`/sitzung/${id}`);
@@ -148,7 +169,7 @@ export default function NewSitzung() {
           <CardContent>
             <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
               <div className="space-y-3">
-                {SITZUNG_TEMPLATES.map((template) => (
+                {templates.map((template) => (
                   <div key={template.id} className="flex items-start space-x-3 space-y-0">
                     <RadioGroupItem value={template.id} id={template.id} />
                     <Label
@@ -172,6 +193,9 @@ export default function NewSitzung() {
                 ))}
               </div>
             </RadioGroup>
+            <p className="text-xs text-muted-foreground mt-4">
+              Sie können weitere Vorlagen in den Einstellungen erstellen
+            </p>
           </CardContent>
         </Card>
       </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Edit2, Trash2, Settings, Palette } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,13 +42,26 @@ export const RoleManager = ({ roles, onUpdate }: RoleManagerProps) => {
     canVote: false
   });
 
+  const ALLOWED_ROLES = ["Mitglied", "Gast"];
+
   const addRole = () => {
     if (newRole.name.trim()) {
+      if (!ALLOWED_ROLES.includes(newRole.name.trim())) {
+        toast.error("Nur 'Mitglied' und 'Gast' sind erlaubte Rollen");
+        return;
+      }
+      
+      // Check if role already exists
+      if (roles.some(r => r.name === newRole.name.trim())) {
+        toast.error("Diese Rolle existiert bereits");
+        return;
+      }
+      
       const role: Role = {
         id: Date.now().toString(),
         name: newRole.name.trim(),
         color: newRole.color,
-        canVote: newRole.canVote,
+        canVote: newRole.name.trim() === "Mitglied",
         isDefault: false
       };
       onUpdate([...roles, role]);
@@ -56,6 +70,18 @@ export const RoleManager = ({ roles, onUpdate }: RoleManagerProps) => {
   };
 
   const updateRole = (updatedRole: Role) => {
+    if (!ALLOWED_ROLES.includes(updatedRole.name)) {
+      toast.error("Nur 'Mitglied' und 'Gast' sind erlaubte Rollen");
+      return;
+    }
+    
+    // Force canVote based on role name
+    if (updatedRole.name === "Mitglied") {
+      updatedRole.canVote = true;
+    } else if (updatedRole.name === "Gast") {
+      updatedRole.canVote = false;
+    }
+    
     onUpdate(roles.map(role => role.id === updatedRole.id ? updatedRole : role));
     setEditingRole(null);
   };
@@ -95,12 +121,24 @@ export const RoleManager = ({ roles, onUpdate }: RoleManagerProps) => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label>Rollenname</Label>
-                  <Input
+                  <Select
                     value={newRole.name}
-                    onChange={(e) => setNewRole({ ...newRole, name: e.target.value })}
-                    placeholder="z.B. Vorsitzende*r"
-                    className="input-enhanced"
-                  />
+                    onValueChange={(value) => {
+                      setNewRole({ 
+                        ...newRole, 
+                        name: value,
+                        canVote: value === "Mitglied"
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="input-enhanced">
+                      <SelectValue placeholder="Rolle auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent className="z-50 bg-popover border shadow-medium">
+                      <SelectItem value="Mitglied">Mitglied</SelectItem>
+                      <SelectItem value="Gast">Gast</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label>Farbe</Label>
@@ -128,10 +166,12 @@ export const RoleManager = ({ roles, onUpdate }: RoleManagerProps) => {
                     type="checkbox"
                     id="canVote"
                     checked={newRole.canVote}
-                    onChange={(e) => setNewRole({ ...newRole, canVote: e.target.checked })}
+                    disabled={true}
                     className="rounded"
                   />
-                  <Label htmlFor="canVote" className="text-sm">Stimmberechtigt</Label>
+                  <Label htmlFor="canVote" className="text-sm text-muted-foreground">
+                    Stimmberechtigt (automatisch)
+                  </Label>
                 </div>
                 <div className="flex items-end">
                   <Button onClick={addRole} className="w-full btn-enhanced">
@@ -218,12 +258,25 @@ export const RoleManager = ({ roles, onUpdate }: RoleManagerProps) => {
               <div className="space-y-4">
                 <div>
                   <Label>Rollenname</Label>
-                  <Input
+                  <Select
                     value={editingRole.name}
-                    onChange={(e) => setEditingRole({ ...editingRole, name: e.target.value })}
+                    onValueChange={(value) => {
+                      setEditingRole({ 
+                        ...editingRole, 
+                        name: value,
+                        canVote: value === "Mitglied"
+                      });
+                    }}
                     disabled={editingRole.isDefault}
-                    className="input-enhanced"
-                  />
+                  >
+                    <SelectTrigger className="input-enhanced">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-50 bg-popover border shadow-medium">
+                      <SelectItem value="Mitglied">Mitglied</SelectItem>
+                      <SelectItem value="Gast">Gast</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label>Farbe</Label>
@@ -251,10 +304,12 @@ export const RoleManager = ({ roles, onUpdate }: RoleManagerProps) => {
                     type="checkbox"
                     id="editCanVote"
                     checked={editingRole.canVote}
-                    onChange={(e) => setEditingRole({ ...editingRole, canVote: e.target.checked })}
+                    disabled={true}
                     className="rounded"
                   />
-                  <Label htmlFor="editCanVote" className="text-sm">Stimmberechtigt</Label>
+                  <Label htmlFor="editCanVote" className="text-sm text-muted-foreground">
+                    Stimmberechtigt (automatisch für Mitglied)
+                  </Label>
                 </div>
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setEditingRole(null)}>

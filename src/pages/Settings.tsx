@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail } from "lucide-react";
 import { EmailSettings } from "@/components/EmailSettings";
+import { TemplateManager } from "@/components/TemplateManager";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -47,6 +48,8 @@ export default function Settings() {
             />
           </CardContent>
         </Card>
+
+        <TemplateManager />
       </div>
     </div>
   );

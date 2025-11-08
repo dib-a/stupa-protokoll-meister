@@ -14,9 +14,11 @@ type MeetingTimes = {
 type MeetingTimeTrackerProps = {
   meetingTimes: MeetingTimes;
   onUpdate: (times: MeetingTimes) => void;
+  onMeetingStart?: () => void;
+  onMeetingEnd?: () => void;
 };
 
-export const MeetingTimeTracker = ({ meetingTimes, onUpdate }: MeetingTimeTrackerProps) => {
+export const MeetingTimeTracker = ({ meetingTimes, onUpdate, onMeetingStart, onMeetingEnd }: MeetingTimeTrackerProps) => {
   const [isPaused, setIsPaused] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -41,6 +43,7 @@ export const MeetingTimeTracker = ({ meetingTimes, onUpdate }: MeetingTimeTracke
       ...meetingTimes,
       opening: formatCurrentTime()
     });
+    onMeetingStart?.();
   };
 
   const startPause = () => {
@@ -76,6 +79,7 @@ export const MeetingTimeTracker = ({ meetingTimes, onUpdate }: MeetingTimeTracke
       closing: formatCurrentTime()
     });
     setIsPaused(false);
+    onMeetingEnd?.();
   };
 
   const calculateTotalDuration = () => {
