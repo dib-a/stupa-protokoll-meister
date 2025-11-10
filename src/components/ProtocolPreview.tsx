@@ -141,30 +141,18 @@ Ergebnis: ${result}\n`;
     let y = 20;
     const lineHeight = 7;
     
-    // Modern color palette (HSL to RGB converted)
+    // Professional color palette - minimal colors
     const colors = {
-      primary: [37, 99, 235] as [number, number, number],
-      accent: [234, 88, 12] as [number, number, number],
-      success: [34, 197, 94] as [number, number, number],
-      text: [15, 23, 42] as [number, number, number],
-      textLight: [100, 116, 139] as [number, number, number],
-      background: [248, 250, 252] as [number, number, number],
-      border: [203, 213, 225] as [number, number, number]
+      text: [30, 30, 30] as [number, number, number],        // Dark gray for main text
+      textLight: [100, 100, 100] as [number, number, number], // Medium gray for secondary text
+      border: [200, 200, 200] as [number, number, number]     // Light gray for borders
     };
     
-    // Helper function to draw modern separator
-    const drawSeparator = (color: [number, number, number] = colors.border) => {
-      doc.setDrawColor(...color);
-      doc.setLineWidth(0.3);
+    // Helper function to draw simple separator
+    const drawSeparator = () => {
+      doc.setDrawColor(...colors.border);
+      doc.setLineWidth(0.5);
       doc.line(margin, y, pageWidth - margin, y);
-      y += 10;
-    };
-    
-    // Helper function to draw accent line
-    const drawAccentLine = () => {
-      doc.setDrawColor(...colors.primary);
-      doc.setLineWidth(2);
-      doc.line(margin, y, margin + 40, y);
       y += 8;
     };
     
@@ -178,68 +166,64 @@ Ergebnis: ${result}\n`;
       return false;
     };
     
-    // Add logo with proper aspect ratio (square container)
-    const logoSize = 35;
-    doc.addImage(stupaLogo, 'PNG', margin, y, logoSize, logoSize, undefined, 'FAST');
+    // Add logo with proper rectangular aspect ratio
+    const logoWidth = 50;
+    const logoHeight = 30;
+    doc.addImage(stupaLogo, 'PNG', margin, y, logoWidth, logoHeight, undefined, 'FAST');
     
-    // Add modern header with gradient effect
+    // Professional header
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.setTextColor(...colors.primary);
-    doc.text("PROTOKOLL", margin + logoSize + 12, y + 12);
+    doc.setFontSize(20);
+    doc.setTextColor(...colors.text);
+    doc.text("PROTOKOLL", margin + logoWidth + 12, y + 10);
     
-    doc.setFontSize(11);
-    doc.setTextColor(...colors.textLight);
+    doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text("Sitzung des Studierendenparlaments", margin + logoSize + 12, y + 21);
+    doc.text("Sitzung des Studierendenparlaments", margin + logoWidth + 12, y + 18);
     
     doc.setFontSize(9);
     doc.setTextColor(...colors.textLight);
-    doc.text(getCurrentDate(), margin + logoSize + 12, y + 28);
+    doc.text(getCurrentDate(), margin + logoWidth + 12, y + 25);
     
-    y += logoSize + 15;
-    drawAccentLine();
+    y += logoHeight + 15;
+    drawSeparator();
     
-    // Meeting times section with modern card-like design
-    doc.setFillColor(...colors.background);
-    doc.roundedRect(margin, y, contentWidth, 35, 3, 3, 'F');
-    
-    y += 8;
+    // Meeting times section
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.setTextColor(...colors.text);
-    doc.text("SITZUNGSZEITEN", margin + 8, y);
+    doc.text("SITZUNGSZEITEN", margin, y);
     y += 10;
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(...colors.textLight);
+    doc.setTextColor(...colors.text);
     
     const openingTime = meetingData.meetingTimes.opening ? `${meetingData.meetingTimes.opening} Uhr` : '[Noch nicht erfasst]';
     const closingTime = meetingData.meetingTimes.closing ? `${meetingData.meetingTimes.closing} Uhr` : '[Sitzung läuft]';
     
-    doc.text(`Beginn: ${openingTime}`, margin + 8, y);
+    doc.text(`Beginn: ${openingTime}`, margin + 5, y);
     y += lineHeight;
-    doc.text(`Ende: ${closingTime}`, margin + 8, y);
-    y += lineHeight + 5;
+    doc.text(`Ende: ${closingTime}`, margin + 5, y);
+    y += lineHeight;
     
     if (meetingData.meetingTimes.pauses.length > 0) {
-      doc.text("Pausen:", margin + 8, y);
+      y += 2;
+      doc.text("Pausen:", margin + 5, y);
       y += lineHeight;
       meetingData.meetingTimes.pauses.forEach((pause) => {
-        doc.text(`  • ${pause.start} - ${pause.end || "läuft"} Uhr`, margin + 8, y);
+        doc.text(`  ${pause.start} - ${pause.end || "läuft"} Uhr`, margin + 5, y);
         y += lineHeight;
       });
-      y += 5;
     }
     
-    y += 10;
+    y += 8;
     drawSeparator();
     
     // Attendance section
     checkPageBreak();
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.setTextColor(...colors.text);
     doc.text("ANWESENHEIT", margin, y);
     y += 10;
@@ -248,208 +232,158 @@ Ergebnis: ${result}\n`;
     const mitglieder = presentMembers.filter(p => p.role === "Mitglied");
     const guests = presentMembers.filter(p => p.role === "Gast");
     
-    // Mitglieder section with accent color
+    // Mitglieder section
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...colors.primary);
-    doc.text(`Mitglieder (${mitglieder.length})`, margin + 5, y);
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.text);
+    doc.text(`Mitglieder (${mitglieder.length}):`, margin + 5, y);
     y += lineHeight + 2;
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(...colors.text);
     mitglieder.forEach((p) => {
       checkPageBreak();
-      doc.setTextColor(...colors.primary);
-      doc.text(`•`, margin + 10, y);
-      doc.setTextColor(...colors.text);
-      doc.text(p.name, margin + 15, y);
+      doc.text(`  ${p.name}`, margin + 5, y);
       y += lineHeight;
     });
     
     if (guests.length > 0) {
-      y += 5;
+      y += 3;
       checkPageBreak();
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(...colors.textLight);
-      doc.text(`Gäste (${guests.length})`, margin + 5, y);
+      doc.text(`Gäste (${guests.length}):`, margin + 5, y);
       y += lineHeight + 2;
       
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
       guests.forEach((p) => {
         checkPageBreak();
-        doc.setTextColor(...colors.textLight);
-        doc.text(`•`, margin + 10, y);
-        doc.setTextColor(...colors.text);
-        doc.text(p.name, margin + 15, y);
+        doc.text(`  ${p.name}`, margin + 5, y);
         y += lineHeight;
       });
     }
     
-    // Quorum with modern badge style
-    y += 8;
+    // Quorum
+    y += 5;
     const totalMitglieder = meetingData.participants.filter(p => p.role === "Mitglied").length;
     const isQuorum = mitglieder.length >= Math.ceil(totalMitglieder / 2);
     
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    if (isQuorum) {
-      doc.setFillColor(...colors.success);
-      doc.setTextColor(255, 255, 255);
-    } else {
-      doc.setFillColor(239, 68, 68); // Red
-      doc.setTextColor(255, 255, 255);
-    }
-    const quorumText = `BESCHLUSSFÄHIGKEIT: ${isQuorum ? "GEGEBEN" : "NICHT GEGEBEN"}`;
-    const textWidth = doc.getTextWidth(quorumText);
-    doc.roundedRect(margin + 5, y - 5, textWidth + 8, 8, 2, 2, 'F');
-    doc.text(quorumText, margin + 9, y);
     doc.setTextColor(...colors.text);
-    y += 12;
+    const quorumText = `Beschlussfähigkeit: ${isQuorum ? "gegeben" : "nicht gegeben"}`;
+    doc.text(quorumText, margin + 5, y);
+    y += 10;
     
     drawSeparator();
     
-    // Agenda section with modern design
+    // Agenda section
     checkPageBreak();
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.setTextColor(...colors.text);
     doc.text("TAGESORDNUNG", margin, y);
-    y += 12;
+    y += 10;
     
     meetingData.agendaItems.forEach((item, index) => {
-      checkPageBreak(30);
+      checkPageBreak(25);
       
-      // TOP number badge
-      doc.setFillColor(...colors.accent);
-      doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.roundedRect(margin + 5, y - 4, 18, 7, 2, 2, 'F');
-      doc.text(`TOP ${index + 1}`, margin + 7, y);
-      
-      // TOP title
+      // TOP heading
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(...colors.text);
-      doc.text(item.title, margin + 28, y);
-      y += lineHeight + 3;
+      doc.text(`TOP ${index + 1}: ${item.title}`, margin + 5, y);
+      y += lineHeight + 2;
       
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(...colors.textLight);
       
       if (item.documentName) {
-        doc.setTextColor(...colors.primary);
-        doc.text(`📄 ${item.documentName}`, margin + 10, y);
         doc.setTextColor(...colors.textLight);
-        y += lineHeight + 2;
+        doc.text(`Dokument: ${item.documentName}`, margin + 10, y);
+        y += lineHeight + 1;
       }
       
       if (item.votingResult) {
         const { ja, nein, enthaltungen } = item.votingResult;
-        const total = ja + nein + enthaltungen;
-        const result = ja > nein ? "ANGENOMMEN" : "ABGELEHNT";
+        const result = ja > nein ? "Angenommen" : "Abgelehnt";
         
-        doc.text(`Abstimmung: ${ja} Ja • ${nein} Nein • ${enthaltungen} Enthaltungen`, margin + 10, y);
-        y += lineHeight + 1;
+        doc.setTextColor(...colors.text);
+        doc.text(`Abstimmung: ${ja} Ja, ${nein} Nein, ${enthaltungen} Enthaltungen`, margin + 10, y);
+        y += lineHeight;
         
-        // Result badge
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        if (ja > nein) {
-          doc.setFillColor(...colors.success);
-        } else {
-          doc.setFillColor(239, 68, 68);
-        }
-        doc.setTextColor(255, 255, 255);
-        const resultWidth = doc.getTextWidth(result);
-        doc.roundedRect(margin + 10, y - 4, resultWidth + 6, 7, 2, 2, 'F');
-        doc.text(result, margin + 13, y);
+        doc.text(`Ergebnis: ${result}`, margin + 10, y);
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.setTextColor(...colors.textLight);
-        y += lineHeight + 2;
+        y += lineHeight + 1;
       }
       
       if (item.notes) {
-        doc.setTextColor(...colors.text);
-        const noteLines = doc.splitTextToSize(`💬 ${item.notes}`, contentWidth - 20);
+        doc.setTextColor(...colors.textLight);
+        const noteLines = doc.splitTextToSize(`Anmerkung: ${item.notes}`, contentWidth - 15);
         noteLines.forEach((line) => {
           checkPageBreak();
           doc.text(line, margin + 10, y);
           y += lineHeight;
         });
-        y += 2;
+        y += 1;
       }
       
-      // Light separator between TOPs
-      doc.setDrawColor(...colors.border);
-      doc.setLineWidth(0.2);
-      doc.line(margin + 5, y, pageWidth - margin - 5, y);
-      y += 8;
+      y += 5;
     });
     
-    // Next meeting with highlight
+    // Next meeting
     if (meetingData.nextMeetingDate) {
-      y += 5;
       checkPageBreak();
+      drawSeparator();
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(...colors.accent);
-      doc.text("📅 NÄCHSTE SITZUNG", margin + 5, y);
-      y += lineHeight + 2;
+      doc.setTextColor(...colors.text);
+      doc.text("Nächste Sitzung:", margin + 5, y);
+      y += lineHeight + 1;
       
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(...colors.text);
-      doc.text(meetingData.nextMeetingDate, margin + 10, y);
-      y += 10;
+      doc.text(meetingData.nextMeetingDate, margin + 5, y);
+      y += 8;
     }
     
     // Attachments section
     const documentsWithTops = meetingData.agendaItems.filter(item => item.documentName);
     if (documentsWithTops.length > 0) {
-      y += 5;
       checkPageBreak();
       drawSeparator();
       
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
+      doc.setFontSize(12);
       doc.setTextColor(...colors.text);
       doc.text("ANLAGEN", margin, y);
       y += 10;
       
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(...colors.textLight);
       
       documentsWithTops.forEach((item) => {
         checkPageBreak();
         const topNumber = meetingData.agendaItems.findIndex(a => a.id === item.id) + 1;
-        doc.setTextColor(...colors.accent);
-        doc.text(`TOP ${topNumber}:`, margin + 5, y);
         doc.setTextColor(...colors.text);
-        doc.text(item.documentName, margin + 22, y);
+        doc.text(`TOP ${topNumber}: ${item.documentName}`, margin + 5, y);
         y += lineHeight + 1;
       });
     }
     
-    // Modern footer with timestamp
+    // Footer with timestamp
     doc.setDrawColor(...colors.border);
-    doc.setLineWidth(0.3);
-    doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+    doc.setLineWidth(0.5);
+    doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
     
     doc.setFontSize(8);
     doc.setTextColor(...colors.textLight);
     doc.setFont("helvetica", "normal");
     const timestamp = `Erstellt am ${new Date().toLocaleString('de-DE')}`;
-    doc.text(timestamp, margin, pageHeight - 12);
+    doc.text(timestamp, margin, pageHeight - 10);
     
-    // Page number on the right
-    doc.text(`Seite 1 von 1`, pageWidth - margin - 30, pageHeight - 12);
+    // Page number
+    doc.text(`Seite 1`, pageWidth - margin - 15, pageHeight - 10);
     
     // Export both PDF and JSON automatically
     doc.save(`Stupa-Protokoll_${new Date().toISOString().split('T')[0]}.pdf`);
