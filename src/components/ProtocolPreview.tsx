@@ -46,9 +46,8 @@ export const ProtocolPreview = ({ meetingData, onNextMeetingDateChange, onEndMee
   const generateProtocolText = () => {
     const currentDate = getCurrentDate();
     const presentMembers = meetingData.participants.filter(p => p.present);
-    const stupaMembers = presentMembers.filter(p => p.role === "Stupa-Mitglied");
+    const mitglieder = presentMembers.filter(p => p.role === "Mitglied");
     const guests = presentMembers.filter(p => p.role === "Gast");
-    const asta = presentMembers.filter(p => p.role === "Referent*in / AStA");
 
     let protocol = `PROTOKOLL
 Sitzung des Studierendenparlaments
@@ -64,17 +63,10 @@ ${meetingData.meetingTimes.pauses.length > 0 ? `\nPausen:` : ''}${meetingData.me
 ═══════════════════════════════════════════════════
 
 ANWESENHEIT:
-Stupa-Mitglieder (${stupaMembers.length}):
-${stupaMembers.map(p => `• ${p.name}`).join('\n')}
+Mitglieder (${mitglieder.length}):
+${mitglieder.map(p => `• ${p.name}`).join('\n')}
 
 `;
-
-    if (asta.length > 0) {
-      protocol += `Referent*innen / AStA (${asta.length}):
-${asta.map(p => `• ${p.name}`).join('\n')}
-
-`;
-    }
 
     if (guests.length > 0) {
       protocol += `Gäste (${guests.length}):
@@ -83,7 +75,7 @@ ${guests.map(p => `• ${p.name}`).join('\n')}
 `;
     }
 
-    protocol += `BESCHLUSSFÄHIGKEIT: ${stupaMembers.length >= Math.ceil(meetingData.participants.filter(p => p.role === "Stupa-Mitglied").length / 2) ? "GEGEBEN" : "NICHT GEGEBEN"}
+    protocol += `BESCHLUSSFÄHIGKEIT: ${mitglieder.length >= Math.ceil(meetingData.participants.filter(p => p.role === "Mitglied").length / 2) ? "GEGEBEN" : "NICHT GEGEBEN"}
 
 ═══════════════════════════════════════════════════
 `;
@@ -147,13 +139,32 @@ Ergebnis: ${result}\n`;
     const contentWidth = pageWidth - (2 * margin);
     
     let y = 20;
-    const lineHeight = 6;
+    const lineHeight = 7;
     
-    // Helper function to draw separator line
-    const drawSeparator = () => {
-      doc.setDrawColor(100, 100, 100);
-      doc.setLineWidth(0.5);
+    // Modern color palette (HSL to RGB converted)
+    const colors = {
+      primary: [37, 99, 235] as [number, number, number],
+      accent: [234, 88, 12] as [number, number, number],
+      success: [34, 197, 94] as [number, number, number],
+      text: [15, 23, 42] as [number, number, number],
+      textLight: [100, 116, 139] as [number, number, number],
+      background: [248, 250, 252] as [number, number, number],
+      border: [203, 213, 225] as [number, number, number]
+    };
+    
+    // Helper function to draw modern separator
+    const drawSeparator = (color: [number, number, number] = colors.border) => {
+      doc.setDrawColor(...color);
+      doc.setLineWidth(0.3);
       doc.line(margin, y, pageWidth - margin, y);
+      y += 10;
+    };
+    
+    // Helper function to draw accent line
+    const drawAccentLine = () => {
+      doc.setDrawColor(...colors.primary);
+      doc.setLineWidth(2);
+      doc.line(margin, y, margin + 40, y);
       y += 8;
     };
     
@@ -167,152 +178,174 @@ Ergebnis: ${result}\n`;
       return false;
     };
     
-    // Add logo
-    const logoWidth = 30;
-    const logoHeight = 30;
-    doc.addImage(stupaLogo, 'PNG', margin, y, logoWidth, logoHeight);
+    // Add logo with proper aspect ratio (square container)
+    const logoSize = 35;
+    doc.addImage(stupaLogo, 'PNG', margin, y, logoSize, logoSize, undefined, 'FAST');
     
-    // Add header title next to logo
+    // Add modern header with gradient effect
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(40, 40, 40);
-    doc.text("PROTOKOLL", margin + logoWidth + 10, y + 10);
-    doc.setFontSize(12);
-    doc.text("Sitzung des Studierendenparlaments", margin + logoWidth + 10, y + 18);
-    doc.setFontSize(10);
+    doc.setFontSize(24);
+    doc.setTextColor(...colors.primary);
+    doc.text("PROTOKOLL", margin + logoSize + 12, y + 12);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(...colors.textLight);
     doc.setFont("helvetica", "normal");
-    doc.text(getCurrentDate(), margin + logoWidth + 10, y + 25);
+    doc.text("Sitzung des Studierendenparlaments", margin + logoSize + 12, y + 21);
     
-    y += logoHeight + 10;
-    drawSeparator();
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.textLight);
+    doc.text(getCurrentDate(), margin + logoSize + 12, y + 28);
     
-    // Meeting times section
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(60, 60, 60);
-    doc.text("SITZUNGSZEITEN", margin, y);
+    y += logoSize + 15;
+    drawAccentLine();
+    
+    // Meeting times section with modern card-like design
+    doc.setFillColor(...colors.background);
+    doc.roundedRect(margin, y, contentWidth, 35, 3, 3, 'F');
+    
     y += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...colors.text);
+    doc.text("SITZUNGSZEITEN", margin + 8, y);
+    y += 10;
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
+    doc.setTextColor(...colors.textLight);
     
     const openingTime = meetingData.meetingTimes.opening ? `${meetingData.meetingTimes.opening} Uhr` : '[Noch nicht erfasst]';
     const closingTime = meetingData.meetingTimes.closing ? `${meetingData.meetingTimes.closing} Uhr` : '[Sitzung läuft]';
     
-    doc.text(`Beginn: ${openingTime}`, margin + 5, y);
+    doc.text(`Beginn: ${openingTime}`, margin + 8, y);
     y += lineHeight;
-    doc.text(`Ende: ${closingTime}`, margin + 5, y);
-    y += lineHeight;
+    doc.text(`Ende: ${closingTime}`, margin + 8, y);
+    y += lineHeight + 5;
     
     if (meetingData.meetingTimes.pauses.length > 0) {
-      y += 3;
-      doc.text("Pausen:", margin + 5, y);
+      doc.text("Pausen:", margin + 8, y);
       y += lineHeight;
       meetingData.meetingTimes.pauses.forEach((pause) => {
-        doc.text(`  • ${pause.start} - ${pause.end || "läuft"} Uhr`, margin + 5, y);
+        doc.text(`  • ${pause.start} - ${pause.end || "läuft"} Uhr`, margin + 8, y);
         y += lineHeight;
       });
+      y += 5;
     }
     
-    y += 5;
+    y += 10;
     drawSeparator();
     
     // Attendance section
     checkPageBreak();
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(13);
+    doc.setTextColor(...colors.text);
     doc.text("ANWESENHEIT", margin, y);
-    y += 8;
+    y += 10;
     
     const presentMembers = meetingData.participants.filter(p => p.present);
-    const stupaMembers = presentMembers.filter(p => p.role === "Stupa-Mitglied");
+    const mitglieder = presentMembers.filter(p => p.role === "Mitglied");
     const guests = presentMembers.filter(p => p.role === "Gast");
-    const asta = presentMembers.filter(p => p.role === "Referent*in / AStA");
     
+    // Mitglieder section with accent color
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text(`Stupa-Mitglieder (${stupaMembers.length}):`, margin + 5, y);
-    y += lineHeight + 1;
+    doc.setFontSize(11);
+    doc.setTextColor(...colors.primary);
+    doc.text(`Mitglieder (${mitglieder.length})`, margin + 5, y);
+    y += lineHeight + 2;
     
     doc.setFont("helvetica", "normal");
-    stupaMembers.forEach((p) => {
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.text);
+    mitglieder.forEach((p) => {
       checkPageBreak();
-      doc.text(`• ${p.name}`, margin + 10, y);
+      doc.setTextColor(...colors.primary);
+      doc.text(`•`, margin + 10, y);
+      doc.setTextColor(...colors.text);
+      doc.text(p.name, margin + 15, y);
       y += lineHeight;
     });
     
-    if (asta.length > 0) {
-      y += 3;
-      checkPageBreak();
-      doc.setFont("helvetica", "bold");
-      doc.text(`Referent*innen / AStA (${asta.length}):`, margin + 5, y);
-      y += lineHeight + 1;
-      
-      doc.setFont("helvetica", "normal");
-      asta.forEach((p) => {
-        checkPageBreak();
-        doc.text(`• ${p.name}`, margin + 10, y);
-        y += lineHeight;
-      });
-    }
-    
     if (guests.length > 0) {
-      y += 3;
+      y += 5;
       checkPageBreak();
-      doc.setFont("helvetica", "bold");
-      doc.text(`Gäste (${guests.length}):`, margin + 5, y);
-      y += lineHeight + 1;
-      
-      doc.setFont("helvetica", "normal");
-      guests.forEach((p) => {
-        checkPageBreak();
-        doc.text(`• ${p.name}`, margin + 10, y);
-        y += lineHeight;
-      });
-    }
-    
-    // Quorum
-    y += 5;
-    const totalStupaMembers = meetingData.participants.filter(p => p.role === "Stupa-Mitglied").length;
-    const isQuorum = stupaMembers.length >= Math.ceil(totalStupaMembers / 2);
-    doc.setFont("helvetica", "bold");
-    if (isQuorum) {
-      doc.setTextColor(0, 120, 0);
-    } else {
-      doc.setTextColor(200, 0, 0);
-    }
-    doc.text(`BESCHLUSSFÄHIGKEIT: ${isQuorum ? "GEGEBEN" : "NICHT GEGEBEN"}`, margin + 5, y);
-    doc.setTextColor(80, 80, 80);
-    y += 8;
-    
-    drawSeparator();
-    
-    // Agenda section
-    checkPageBreak();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(60, 60, 60);
-    doc.text("TAGESORDNUNG", margin, y);
-    y += 10;
-    
-    meetingData.agendaItems.forEach((item, index) => {
-      checkPageBreak(25);
-      
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(40, 40, 40);
-      doc.text(`TOP ${index + 1}: ${item.title}`, margin + 5, y);
+      doc.setTextColor(...colors.textLight);
+      doc.text(`Gäste (${guests.length})`, margin + 5, y);
       y += lineHeight + 2;
       
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(80, 80, 80);
+      guests.forEach((p) => {
+        checkPageBreak();
+        doc.setTextColor(...colors.textLight);
+        doc.text(`•`, margin + 10, y);
+        doc.setTextColor(...colors.text);
+        doc.text(p.name, margin + 15, y);
+        y += lineHeight;
+      });
+    }
+    
+    // Quorum with modern badge style
+    y += 8;
+    const totalMitglieder = meetingData.participants.filter(p => p.role === "Mitglied").length;
+    const isQuorum = mitglieder.length >= Math.ceil(totalMitglieder / 2);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    if (isQuorum) {
+      doc.setFillColor(...colors.success);
+      doc.setTextColor(255, 255, 255);
+    } else {
+      doc.setFillColor(239, 68, 68); // Red
+      doc.setTextColor(255, 255, 255);
+    }
+    const quorumText = `BESCHLUSSFÄHIGKEIT: ${isQuorum ? "GEGEBEN" : "NICHT GEGEBEN"}`;
+    const textWidth = doc.getTextWidth(quorumText);
+    doc.roundedRect(margin + 5, y - 5, textWidth + 8, 8, 2, 2, 'F');
+    doc.text(quorumText, margin + 9, y);
+    doc.setTextColor(...colors.text);
+    y += 12;
+    
+    drawSeparator();
+    
+    // Agenda section with modern design
+    checkPageBreak();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...colors.text);
+    doc.text("TAGESORDNUNG", margin, y);
+    y += 12;
+    
+    meetingData.agendaItems.forEach((item, index) => {
+      checkPageBreak(30);
+      
+      // TOP number badge
+      doc.setFillColor(...colors.accent);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.roundedRect(margin + 5, y - 4, 18, 7, 2, 2, 'F');
+      doc.text(`TOP ${index + 1}`, margin + 7, y);
+      
+      // TOP title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(...colors.text);
+      doc.text(item.title, margin + 28, y);
+      y += lineHeight + 3;
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(...colors.textLight);
       
       if (item.documentName) {
-        doc.text(`Dokument: ${item.documentName}`, margin + 10, y);
-        y += lineHeight + 1;
+        doc.setTextColor(...colors.primary);
+        doc.text(`📄 ${item.documentName}`, margin + 10, y);
+        doc.setTextColor(...colors.textLight);
+        y += lineHeight + 2;
       }
       
       if (item.votingResult) {
@@ -320,49 +353,60 @@ Ergebnis: ${result}\n`;
         const total = ja + nein + enthaltungen;
         const result = ja > nein ? "ANGENOMMEN" : "ABGELEHNT";
         
-        doc.text(`Abstimmung: ${ja} Ja, ${nein} Nein, ${enthaltungen} Enthaltungen (${total} Stimmen)`, margin + 10, y);
-        y += lineHeight;
-        
-        doc.setFont("helvetica", "bold");
-        if (ja > nein) {
-          doc.setTextColor(0, 120, 0);
-        } else {
-          doc.setTextColor(200, 0, 0);
-        }
-        doc.text(`Ergebnis: ${result}`, margin + 10, y);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(80, 80, 80);
+        doc.text(`Abstimmung: ${ja} Ja • ${nein} Nein • ${enthaltungen} Enthaltungen`, margin + 10, y);
         y += lineHeight + 1;
+        
+        // Result badge
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        if (ja > nein) {
+          doc.setFillColor(...colors.success);
+        } else {
+          doc.setFillColor(239, 68, 68);
+        }
+        doc.setTextColor(255, 255, 255);
+        const resultWidth = doc.getTextWidth(result);
+        doc.roundedRect(margin + 10, y - 4, resultWidth + 6, 7, 2, 2, 'F');
+        doc.text(result, margin + 13, y);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...colors.textLight);
+        y += lineHeight + 2;
       }
       
       if (item.notes) {
-        const noteLines = doc.splitTextToSize(`Anmerkung: ${item.notes}`, contentWidth - 15);
+        doc.setTextColor(...colors.text);
+        const noteLines = doc.splitTextToSize(`💬 ${item.notes}`, contentWidth - 20);
         noteLines.forEach((line) => {
           checkPageBreak();
           doc.text(line, margin + 10, y);
           y += lineHeight;
         });
-        y += 1;
+        y += 2;
       }
       
-      y += 4;
+      // Light separator between TOPs
+      doc.setDrawColor(...colors.border);
+      doc.setLineWidth(0.2);
+      doc.line(margin + 5, y, pageWidth - margin - 5, y);
+      y += 8;
     });
     
-    // Next meeting
+    // Next meeting with highlight
     if (meetingData.nextMeetingDate) {
-      y += 3;
+      y += 5;
       checkPageBreak();
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(60, 60, 60);
-      doc.text("NÄCHSTE SITZUNG", margin + 5, y);
+      doc.setTextColor(...colors.accent);
+      doc.text("📅 NÄCHSTE SITZUNG", margin + 5, y);
       y += lineHeight + 2;
       
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(80, 80, 80);
+      doc.setTextColor(...colors.text);
       doc.text(meetingData.nextMeetingDate, margin + 10, y);
-      y += 8;
+      y += 10;
     }
     
     // Attachments section
@@ -373,31 +417,56 @@ Ergebnis: ${result}\n`;
       drawSeparator();
       
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setTextColor(60, 60, 60);
+      doc.setFontSize(13);
+      doc.setTextColor(...colors.text);
       doc.text("ANLAGEN", margin, y);
-      y += 8;
+      y += 10;
       
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(80, 80, 80);
+      doc.setTextColor(...colors.textLight);
       
       documentsWithTops.forEach((item) => {
         checkPageBreak();
         const topNumber = meetingData.agendaItems.findIndex(a => a.id === item.id) + 1;
-        doc.text(`TOP ${topNumber}: ${item.documentName}`, margin + 5, y);
-        y += lineHeight;
+        doc.setTextColor(...colors.accent);
+        doc.text(`TOP ${topNumber}:`, margin + 5, y);
+        doc.setTextColor(...colors.text);
+        doc.text(item.documentName, margin + 22, y);
+        y += lineHeight + 1;
       });
     }
     
-    // Footer with timestamp
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.setFont("helvetica", "italic");
-    const timestamp = `Protokoll erstellt am: ${new Date().toLocaleString('de-DE')}`;
-    doc.text(timestamp, margin, pageHeight - 10);
+    // Modern footer with timestamp
+    doc.setDrawColor(...colors.border);
+    doc.setLineWidth(0.3);
+    doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
     
+    doc.setFontSize(8);
+    doc.setTextColor(...colors.textLight);
+    doc.setFont("helvetica", "normal");
+    const timestamp = `Erstellt am ${new Date().toLocaleString('de-DE')}`;
+    doc.text(timestamp, margin, pageHeight - 12);
+    
+    // Page number on the right
+    doc.text(`Seite 1 von 1`, pageWidth - margin - 30, pageHeight - 12);
+    
+    // Export both PDF and JSON automatically
     doc.save(`Stupa-Protokoll_${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    // Also export JSON automatically after PDF
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const jsonData = JSON.stringify(meetingData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Stupa-Sitzung_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
     setIsExporting(false);
   };
 
