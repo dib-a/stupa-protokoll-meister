@@ -187,6 +187,20 @@ export default function SitzungDetail() {
     updateSitzung(sitzung.id, { documents });
   };
 
+  const handleDocumentsAdded = (files: File[]) => {
+    const newAgendaItems: AgendaItem[] = files.map(file => ({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: file.name.replace('.pdf', ''),
+      votingResult: null,
+      notes: "",
+      completed: false,
+      documentName: file.name,
+      document: file,
+    }));
+    updateSitzung(sitzung.id, { agendaItems: [...sitzung.agendaItems, ...newAgendaItems] });
+    toast.success(`${files.length} TOP${files.length > 1 ? 's' : ''} aus PDF${files.length > 1 ? 's' : ''} erstellt`);
+  };
+
   const handleUpdateRoles = (roles: Role[]) => {
     updateSitzung(sitzung.id, { roles });
   };
@@ -410,6 +424,7 @@ export default function SitzungDetail() {
           <DocumentManager 
             documents={sitzung.documents}
             onUpdate={handleUpdateDocuments}
+            onDocumentsAdded={handleDocumentsAdded}
           />
           <AgendaManager
             agendaItems={sitzung.agendaItems}

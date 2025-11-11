@@ -6,13 +6,17 @@ import { Badge } from "@/components/ui/badge";
 type DocumentManagerProps = {
   documents: File[];
   onUpdate: (documents: File[]) => void;
+  onDocumentsAdded?: (files: File[]) => void;
 };
 
-export const DocumentManager = ({ documents, onUpdate }: DocumentManagerProps) => {
+export const DocumentManager = ({ documents, onUpdate, onDocumentsAdded }: DocumentManagerProps) => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     const pdfFiles = files.filter(file => file.type === "application/pdf");
     onUpdate([...documents, ...pdfFiles]);
+    if (pdfFiles.length > 0 && onDocumentsAdded) {
+      onDocumentsAdded(pdfFiles);
+    }
     event.target.value = "";
   };
 
