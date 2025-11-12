@@ -4,11 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle, FileText, ChevronRight, Plus } from "lucide-react";
+import { CheckCircle, FileText, ChevronRight, Plus, Vote } from "lucide-react";
 import { AntraegeManager } from "./AntraegeManager";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type SessionLiveViewProps = {
   agendaItems: AgendaItem[];
@@ -28,8 +38,28 @@ export const SessionLiveView = ({
   const [selectedTopId, setSelectedTopId] = useState<string | null>(
     agendaItems.length > 0 ? agendaItems[0].id : null
   );
+  const [addTopDialogOpen, setAddTopDialogOpen] = useState(false);
+  const [newTopTitle, setNewTopTitle] = useState("");
 
   const selectedTop = agendaItems.find(item => item.id === selectedTopId);
+
+  const handleAddTop = () => {
+    if (!newTopTitle.trim()) return;
+    
+    const newTop: AgendaItem = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: newTopTitle.trim(),
+      notes: "",
+      completed: false,
+      antraege: [],
+      isAntraegeSection: false,
+    };
+    
+    onUpdate([...agendaItems, newTop]);
+    setNewTopTitle("");
+    setAddTopDialogOpen(false);
+    setSelectedTopId(newTop.id);
+  };
 
   const handleUpdateNotes = (notes: string) => {
     if (!selectedTopId) return;
@@ -59,6 +89,31 @@ export const SessionLiveView = ({
     );
   };
 
+  const handleToggleAntraegeSection = () => {
+    if (!selectedTopId) return;
+    const selectedItem = agendaItems.find(item => item.id === selectedTopId);
+    
+    // If this TOP is already the Anträge section, remove it
+    if (selectedItem?.isAntraegeSection) {
+      onUpdate(
+        agendaItems.map(item =>
+          item.id === selectedTopId ? { ...item, isAntraegeSection: false } : item
+        )
+      );
+      toast.success("Anträge-Bereich entfernt");
+    } else {
+      // Make this TOP the Anträge section and remove the flag from all others
+      onUpdate(
+        agendaItems.map(item =>
+          item.id === selectedTopId 
+            ? { ...item, isAntraegeSection: true }
+            : { ...item, isAntraegeSection: false }
+        )
+      );
+      toast.success("Anträge-Bereich aktiviert");
+    }
+  };
+
   const getCompletionStats = () => {
     const completed = agendaItems.filter(item => item.completed).length;
     const total = agendaItems.length;
@@ -76,9 +131,47 @@ export const SessionLiveView = ({
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Tagesordnung</span>
-              <Badge variant="outline">
-                {stats.completed}/{stats.total}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">
+                  {stats.completed}/{stats.total}
+                </Badge>
+                <Dialog open={addTopDialogOpen} onOpenChange={setAddTopDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      TOP
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Neuen TOP hinzufügen</DialogTitle>
+                      <DialogDescription>
+                        Fügen Sie einen neuen Tagesordnungspunkt hinzu
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-top-title">Titel</Label>
+                        <Input
+                          id="new-top-title"
+                          value={newTopTitle}
+                          onChange={(e) => setNewTopTitle(e.target.value)}
+                          placeholder="z.B. Kassenbericht"
+                          onKeyPress={(e) => e.key === "Enter" && handleAddTop()}
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setAddTopDialogOpen(false)}>
+                          Abbrechen
+                        </Button>
+                        <Button onClick={handleAddTop}>
+                          Hinzufügen
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardTitle>
             <div className="w-full bg-muted rounded-full h-2 mt-2">
               <div
@@ -119,7 +212,8 @@ export const SessionLiveView = ({
                     </div>
                     {item.isAntraegeSection && (
                       <Badge variant="secondary" className="mt-2 text-xs">
-                        {item.antraege?.length || 0} Anträge
+                        <Vote className="h-3 w-3 mr-1" />
+                        {item.antraege?.length || 0} Antrag{item.antraege?.length === 1 ? '' : 'e'}
                       </Badge>
                     )}
                   </button>
@@ -158,16 +252,38 @@ export const SessionLiveView = ({
                     </div>
                     <CardTitle className="text-2xl">{selectedTop.title}</CardTitle>
                   </div>
-                  {!selectedTop.completed && !selectedTop.isAntraegeSection && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={handleMarkTopComplete}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Als erledigt markieren
-                    </Button>
-                  )}
+                  <div className="flex gap-2">
+                    {!selectedTop.isAntraegeSection && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleToggleAntraegeSection}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Anträge hinzufügen
+                      </Button>
+                    )}
+                    {selectedTop.isAntraegeSection && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleToggleAntraegeSection}
+                      >
+                        <Vote className="h-4 w-4 mr-2" />
+                        Anträge entfernen
+                      </Button>
+                    )}
+                    {!selectedTop.completed && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={handleMarkTopComplete}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Als erledigt markieren
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -186,7 +302,7 @@ export const SessionLiveView = ({
               </CardContent>
             </Card>
 
-            {/* Anträge Section */}
+            {/* Anträge Section - Only for designated TOP */}
             {selectedTop.isAntraegeSection && (
               <AntraegeManager
                 antraege={selectedTop.antraege || []}

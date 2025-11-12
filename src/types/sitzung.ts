@@ -23,6 +23,8 @@ export interface Antrag {
   inputResult: string;
   notes: string;
   completed: boolean;
+  documentName?: string;
+  document?: File;
 }
 
 export interface AgendaItem {

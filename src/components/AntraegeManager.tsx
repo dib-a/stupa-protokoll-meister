@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Trash2, Vote, CheckCircle, Type } from "lucide-react";
+import { useState, useRef } from "react";
+import { Plus, Trash2, Vote, CheckCircle, Type, FileText, Eye, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Antrag, AntragType } from "@/types/sitzung";
+import { PDFViewer } from "./PDFViewer";
 import {
   Select,
   SelectContent,
@@ -34,6 +35,8 @@ export const AntraegeManager = ({
   const [editingAntragId, setEditingAntragId] = useState<string | null>(null);
   const [voteData, setVoteData] = useState({ ja: 0, nein: 0, enthaltungen: 0 });
   const [inputResult, setInputResult] = useState("");
+  const [viewingPdf, setViewingPdf] = useState<File | null>(null);
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   const addAntrag = () => {
     if (newAntragTitle.trim()) {
@@ -87,6 +90,28 @@ export const AntraegeManager = ({
     onUpdate(antraege.map(a => (a.id === id ? { ...a, notes } : a)));
   };
 
+  const handleFileUpload = (id: string, file: File | null) => {
+    if (!file) return;
+    
+    onUpdate(
+      antraege.map(antrag =>
+        antrag.id === id
+          ? { ...antrag, document: file, documentName: file.name }
+          : antrag
+      )
+    );
+  };
+
+  const removeDocument = (id: string) => {
+    onUpdate(
+      antraege.map(antrag =>
+        antrag.id === id
+          ? { ...antrag, document: undefined, documentName: undefined }
+          : antrag
+      )
+    );
+  };
+
   const getVoteStatus = (result: { ja: number; nein: number; enthaltungen: number } | null) => {
     if (!result) return null;
     const total = result.ja + result.nein + result.enthaltungen;
@@ -95,7 +120,15 @@ export const AntraegeManager = ({
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      <PDFViewer
+        file={viewingPdf}
+        isOpen={!!viewingPdf}
+        onClose={() => setViewingPdf(null)}
+        modal={false}
+      />
+      
+      <div className="space-y-6">
       {/* Add New Antrag */}
       <Card>
         <CardHeader>
@@ -184,6 +217,49 @@ export const AntraegeManager = ({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* PDF Upload Section */}
+                  <div className="border rounded-lg p-4 bg-muted/20">
+                    <Label className="mb-2 block">PDF-Dokument</Label>
+                    <input
+                      type="file"
+                      ref={(el) => (fileInputRefs.current[antrag.id] = el)}
+                      accept=".pdf"
+                      onChange={(e) => handleFileUpload(antrag.id, e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    {antrag.documentName && antrag.document ? (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingPdf(antrag.document!)}
+                          className="gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          {antrag.documentName}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeDocument(antrag.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRefs.current[antrag.id]?.click()}
+                        className="gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        PDF hochladen
+                      </Button>
+                    )}
+                  </div>
+
+                  <Separator />
                   {/* Voting Result Section */}
                   {antrag.type === "voting" && (
                     <>
@@ -386,6 +462,7 @@ export const AntraegeManager = ({
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </>
   );
 };
