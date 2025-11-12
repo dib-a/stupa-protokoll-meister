@@ -91,13 +91,29 @@ ${guests.map(p => `• ${p.name}`).join('\n')}
         protocol += `Dokument: ${item.documentName}\n`;
       }
       
-      if (item.votingResult) {
-        const { ja, nein, enthaltungen } = item.votingResult;
-        const total = ja + nein + enthaltungen;
-        const result = ja > nein ? "ANGENOMMEN" : "ABGELEHNT";
-        
-        protocol += `Abstimmungsergebnis: ${ja} Ja, ${nein} Nein, ${enthaltungen} Enthaltungen (${total} Stimmen)
-Ergebnis: ${result}\n`;
+      // Handle Anträge if this TOP has them
+      if (item.antraege && item.antraege.length > 0) {
+        protocol += `\nEingegangene Anträge:\n`;
+        item.antraege.forEach((antrag, antragIndex) => {
+          protocol += `\n${antragIndex + 1}. ${antrag.title}\n`;
+          
+          if (antrag.type === "voting" && antrag.votingResult) {
+            const { ja, nein, enthaltungen } = antrag.votingResult;
+            const total = ja + nein + enthaltungen;
+            const result = ja > nein ? "ANGENOMMEN" : "ABGELEHNT";
+            
+            protocol += `   Abstimmungsergebnis: ${ja} Ja, ${nein} Nein, ${enthaltungen} Enthaltungen (${total} Stimmen)\n`;
+            protocol += `   Ergebnis: ${result}\n`;
+          }
+          
+          if (antrag.type === "input" && antrag.inputResult) {
+            protocol += `   Ergebnis: ${antrag.inputResult}\n`;
+          }
+          
+          if (antrag.notes) {
+            protocol += `   Anmerkung: ${antrag.notes}\n`;
+          }
+        });
       }
       
       if (item.notes) {
@@ -303,18 +319,62 @@ Ergebnis: ${result}\n`;
         y += lineHeight + 1;
       }
       
-      if (item.votingResult) {
-        const { ja, nein, enthaltungen } = item.votingResult;
-        const result = ja > nein ? "Angenommen" : "Abgelehnt";
-        
-        doc.setTextColor(...colors.text);
-        doc.text(`Abstimmung: ${ja} Ja, ${nein} Nein, ${enthaltungen} Enthaltungen`, margin + 10, y);
-        y += lineHeight;
-        
+      // Handle Anträge
+      if (item.antraege && item.antraege.length > 0) {
         doc.setFont("helvetica", "bold");
-        doc.text(`Ergebnis: ${result}`, margin + 10, y);
+        doc.setTextColor(...colors.text);
+        doc.text(`Eingegangene Anträge:`, margin + 10, y);
         doc.setFont("helvetica", "normal");
-        y += lineHeight + 1;
+        y += lineHeight + 2;
+        
+        item.antraege.forEach((antrag, antragIndex) => {
+          if (y > doc.internal.pageSize.height - 30) {
+            doc.addPage();
+            y = margin;
+          }
+          
+          doc.setFont("helvetica", "bold");
+          doc.text(`${antragIndex + 1}. ${antrag.title}`, margin + 15, y);
+          doc.setFont("helvetica", "normal");
+          y += lineHeight;
+          
+          if (antrag.type === "voting" && antrag.votingResult) {
+            const { ja, nein, enthaltungen } = antrag.votingResult;
+            const result = ja > nein ? "Angenommen" : "Abgelehnt";
+            
+            doc.setTextColor(...colors.text);
+            doc.text(`   Abstimmung: ${ja} Ja, ${nein} Nein, ${enthaltungen} Enthaltungen`, margin + 15, y);
+            y += lineHeight;
+            
+            doc.setFont("helvetica", "bold");
+            doc.text(`   Ergebnis: ${result}`, margin + 15, y);
+            doc.setFont("helvetica", "normal");
+            y += lineHeight;
+          }
+          
+          if (antrag.type === "input" && antrag.inputResult) {
+            doc.setTextColor(...colors.text);
+            doc.text(`   Ergebnis: ${antrag.inputResult}`, margin + 15, y);
+            y += lineHeight;
+          }
+          
+          if (antrag.notes) {
+            doc.setTextColor(...colors.textLight);
+            const notesLines = doc.splitTextToSize(`   Anmerkung: ${antrag.notes}`, pageWidth - margin * 2 - 20);
+            notesLines.forEach((line: string) => {
+              if (y > doc.internal.pageSize.height - 30) {
+                doc.addPage();
+                y = margin;
+              }
+              doc.text(line, margin + 15, y);
+              y += lineHeight;
+            });
+          }
+          
+          y += 2;
+        });
+        
+        y += 2;
       }
       
       if (item.notes) {

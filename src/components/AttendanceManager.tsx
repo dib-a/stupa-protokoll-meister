@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Participant } from "@/pages/Index";
+import { Participant } from "@/types/sitzung";
 import { RoleManager, Role } from "@/components/RoleManager";
 
 type AttendanceManagerProps = {

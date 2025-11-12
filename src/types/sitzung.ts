@@ -13,14 +13,27 @@ export interface VotingResult {
   enthaltungen: number;
 }
 
+export type AntragType = "voting" | "input";
+
+export interface Antrag {
+  id: string;
+  title: string;
+  type: AntragType;
+  votingResult: VotingResult | null;
+  inputResult: string;
+  notes: string;
+  completed: boolean;
+}
+
 export interface AgendaItem {
   id: string;
   title: string;
-  votingResult: VotingResult | null;
   notes: string;
   completed: boolean;
   documentName?: string;
   document?: File;
+  antraege: Antrag[];
+  isAntraegeSection?: boolean;
 }
 
 export interface MeetingTime {

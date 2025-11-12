@@ -10,35 +10,12 @@ import { ProtocolUploader } from "@/components/ProtocolUploader";
 import { Role } from "@/components/RoleManager";
 import stupaLogo from "@/assets/stupa-logo-transparent.png";
 
-export type Participant = {
-  id: string;
-  name: string;
-  role: string; // Now accepts any role name
-  present: boolean;
-};
-
-export type AgendaItem = {
-  id: string;
-  title: string;
-  votingResult: {
-    ja: number;
-    nein: number;
-    enthaltungen: number;
-  } | null;
-  notes: string;
-  completed: boolean;
-  documentName?: string; // PDF filename if this TOP is created from a document
-  document?: File; // PDF file object if this TOP is created from a document
-};
+import { Participant, AgendaItem, MeetingTime } from "@/types/sitzung";
 
 export type MeetingData = {
   participants: Participant[];
   agendaItems: AgendaItem[];
-  meetingTimes: {
-    opening?: string;
-    pauses: Array<{ start: string; end?: string }>;
-    closing?: string;
-  };
+  meetingTimes: MeetingTime;
   nextMeetingDate?: string;
   documents: File[];
   roles: Role[];
@@ -76,11 +53,11 @@ const Index = () => {
     const newAgendaItems = newDocs.map(doc => ({
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       title: doc.name.replace('.pdf', ''),
-      votingResult: null,
       notes: '',
       completed: false,
       documentName: doc.name,
-      document: doc
+      document: doc,
+      antraege: []
     }));
 
     updateMeetingData({ 

@@ -31,9 +31,9 @@ export default function NewSitzung() {
     const agendaItems: AgendaItem[] = template?.agendaItems.map((item) => ({
       id: crypto.randomUUID(),
       title: item.title,
-      votingResult: null,
       notes: "",
       completed: false,
+      antraege: [],
     })) || [];
 
     const defaultRoles = [

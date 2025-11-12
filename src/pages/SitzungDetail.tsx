@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Settings, Save, Keyboard, History } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttendanceManager } from "@/components/AttendanceManager";
-import { AgendaManager } from "@/components/AgendaManager";
+import { SessionLiveView } from "@/components/SessionLiveView";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MeetingTimeTracker } from "@/components/MeetingTimeTracker";
 import { ProtocolPreview } from "@/components/ProtocolPreview";
@@ -191,11 +191,11 @@ export default function SitzungDetail() {
     const newAgendaItems: AgendaItem[] = files.map(file => ({
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       title: file.name.replace('.pdf', ''),
-      votingResult: null,
       notes: "",
       completed: false,
       documentName: file.name,
       document: file,
+      antraege: [],
     }));
     updateSitzung(sitzung.id, { agendaItems: [...sitzung.agendaItems, ...newAgendaItems] });
     toast.success(`${files.length} TOP${files.length > 1 ? 's' : ''} aus PDF${files.length > 1 ? 's' : ''} erstellt`);
@@ -426,11 +426,13 @@ export default function SitzungDetail() {
             onUpdate={handleUpdateDocuments}
             onDocumentsAdded={handleDocumentsAdded}
           />
-          <AgendaManager
+          <SessionLiveView
             agendaItems={sitzung.agendaItems}
             onUpdate={handleUpdateAgenda}
             eligibleVoters={getEligibleVoters()}
             isMeetingActive={sitzung.status === "ongoing"}
+            participants={sitzung.participants}
+            roles={sitzung.roles}
           />
         </TabsContent>
 

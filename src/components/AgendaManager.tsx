@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AgendaItem } from "@/pages/Index";
+import { AgendaItem } from "@/types/sitzung";
 import { DefaultTOPsManager } from "./DefaultTOPsManager";
 import { PDFViewer } from "./PDFViewer";
 
@@ -29,9 +29,9 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
       const newItem: AgendaItem = {
         id: Date.now().toString(),
         title: newItemTitle.trim(),
-        votingResult: null,
         notes: "",
-        completed: false
+        completed: false,
+        antraege: []
       };
       onUpdate([...agendaItems, newItem]);
       setNewItemTitle("");
@@ -43,19 +43,28 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
   };
 
   const startVoting = (id: string) => {
-    const item = agendaItems.find(item => item.id === id);
-    if (item?.votingResult) {
-      setVoteData(item.votingResult);
-    } else {
-      setVoteData({ ja: 0, nein: 0, enthaltungen: 0 });
-    }
+    // Legacy voting support - kept for backwards compatibility
+    setVoteData({ ja: 0, nein: 0, enthaltungen: 0 });
     setEditingVote(id);
   };
 
   const saveVotingResult = (id: string) => {
+    // Legacy voting - convert to antrag structure
     onUpdate(agendaItems.map(item =>
       item.id === id
-        ? { ...item, votingResult: voteData, completed: true }
+        ? { 
+            ...item, 
+            antraege: [{
+              id: Date.now().toString(),
+              title: "Abstimmung",
+              type: "voting" as const,
+              votingResult: voteData,
+              inputResult: "",
+              notes: "",
+              completed: true
+            }],
+            completed: true 
+          }
         : item
     ));
     setEditingVote(null);
@@ -84,15 +93,18 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
     const newItems = defaultTOPs.map(top => ({
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       title: top.title,
-      votingResult: null,
       notes: "",
-      completed: false
+      completed: false,
+      antraege: []
     }));
     onUpdate([...agendaItems, ...newItems]);
   };
 
-  const getVoteResultStatus = (result: AgendaItem["votingResult"]) => {
-    if (!result) return null;
+  const getVoteResultStatus = (antraege: AgendaItem["antraege"]) => {
+    // Get first voting antrag for legacy display
+    const votingAntrag = antraege?.find(a => a.type === "voting" && a.votingResult);
+    if (!votingAntrag?.votingResult) return null;
+    const result = votingAntrag.votingResult;
     const total = result.ja + result.nein + result.enthaltungen;
     const majority = result.ja > result.nein;
     return { total, majority, ...result };
@@ -140,7 +152,7 @@ export const AgendaManager = ({ agendaItems, onUpdate, eligibleVoters = 0, isMee
       {agendaItems.length > 0 ? (
         <div className="space-y-4">
           {agendaItems.map((item, index) => {
-            const voteStatus = getVoteResultStatus(item.votingResult);
+            const voteStatus = getVoteResultStatus(item.antraege || []);
             return (
               <Card key={item.id} className={item.completed ? "bg-muted/30" : ""}>
                 <CardHeader>
